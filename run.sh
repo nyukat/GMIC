@@ -7,7 +7,7 @@ GPU_NUMBER=0
 
 MODEL_PATH='models/sample_model.p'
 CROPPED_IMAGE_PATH='sample_data/cropped_images'
-EXAM_LIST_PATH='sample_output/data.pkl'
+EXAM_LIST_PATH='sample_data/data.pkl'
 PREDICTIONS_PATH='sample_output/predictions.csv'
 PYTHONPATH=$(pwd):$PYTHONPATH
 
