@@ -1,4 +1,4 @@
-# GMIC
+# Globally-Aware Multiple Instance Classifier forBreast Cancer Screening
 
 ## TODO: 
 - resolve TODOs
