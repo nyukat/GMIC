@@ -5,10 +5,10 @@
 - edit prerequisite
 
 ## Introduction
-This is an implementation of the model used for TODO as described in our paper [TODO](https://todo). The implementation allows users to TODO. 
+This is an implementation of the model used for TODO as described in our paper [TODO](https://todo). The implementation allows users to  get breast cancer predictions and visualization of saliency maps by applying one of our pretrained models.
 
-* Input images: TODO (2 CC view mammography images of size 2677x1942 and 2 MLO view mammography images of size 2974x1748. Each image is saved as 16-bit png file and gets standardized separately before being fed to the models.)?
-* Output: TODO (2 predictions for each breast, probability of benign and malignant findings: `left_benign`, `right_benign`, `left_malignant`, and `right_malignant`.)?
+* Input images: 2 CC view mammography images and 2 MLO view mammography images, each of size 2944 x 19202. Each image is saved as 16-bit png file and gets standardized separately before being fed to the models.
+* Output: one prediction for each image, probability of benign and malignant findings: `left_benign`, `right_benign`, `left_malignant`, and `right_malignant`.
 
 This model creates predictions on each of four standard views of screening mammography (L-CC, R-CC, L-MLO, R-MLO) independently TODO. As a part of this repository, we provide TODO sample exams (in `sample_data/cropped_images` directory and exam list stored in `sample_data/data.pkl`). This model is implemented in PyTorch. 
 
