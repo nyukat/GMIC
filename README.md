@@ -15,14 +15,13 @@ This model creates predictions on each of four standard views of screening mammo
 ## Prerequisites
 
 * Python (3.6)
-* PyTorch (0.4.0)
+* PyTorch (0.4.1)
 * torchvision (0.2.0)
 * NumPy (1.14.3)
 * SciPy (1.0.0)
 * H5py (2.7.1)
 * imageio (2.4.1)
 * pandas (0.22.0)
-* tqdm (4.19.8)
 * opencv-python (3.4.2)
 
 ## License
@@ -114,16 +113,16 @@ The following variables defined in `run.sh` can be modified as needed:
 * `DEVICE_TYPE`: Device type to use in heatmap generation and classifiers, either 'cpu' or 'gpu'. Default: 'gpu'
 * `NUM_EPOCHS`: The number of epochs to be averaged in the output of the classifiers. Default: 10.
 * `GPU_NUMBER`: Specify which one of the GPUs to use when multiple GPUs are available. Default: 0. 
-
-* `MODEL_PATH`: The path where the saved weights for the *image-only* model is saved.
+* `MODEL_PATH`: The path where the saved weights model is saved.
 * `CROPPED_IMAGE_PATH`: The directory where cropped mammograms are saved.
 * `EXAM_LIST_PATH`: The path where the exam list is stored.
 * `PREDICTIONS_PATH`: The path to save predictions.
+* `VISUALIZATION_PATH`: The path to save visualizations.
 
 
 ### Running the models
 
-`src/modeling/run_model.py` TODO 
+`src/modeling/run_model.py`
 
 #### Run the model
 ```bash
@@ -132,6 +131,7 @@ python3 src/modeling/run_model.py \
     --data-path $EXAM_LIST_PATH \
     --image-path $CROPPED_IMAGE_PATH \
     --output-path $IMAGE_PREDICTIONS_PATH \
+    --vis-path $VISUALIZATION_PATH$ \
     --use-augmentation \
     --num-epochs $NUM_EPOCHS \
     --device-type $DEVICE_TYPE \
