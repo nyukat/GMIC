@@ -25,7 +25,6 @@ Defines utility functions for reading png and hdf5 images.
 """
 import numpy as np
 import imageio
-import h5py
 
 
 def read_image_png(file_name):
@@ -33,8 +32,3 @@ def read_image_png(file_name):
     return image
 
 
-def read_image_mat(file_name):
-    data = h5py.File(file_name, 'r')
-    image = np.array(data['image']).T
-    data.close()
-    return image

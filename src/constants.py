@@ -50,25 +50,9 @@ class VIEWS:
         return view in (cls.R_CC, cls.R_MLO)
 
 
-class VIEWANGLES:
-    CC = "CC"
-    MLO = "MLO"
-
-    LIST = [CC, MLO]
-
-
-class LABELS:
-    LEFT_BENIGN = "left_benign"
-    RIGHT_BENIGN = "right_benign"
-    LEFT_MALIGNANT = "left_malignant"
-    RIGHT_MALIGNANT = "right_malignant"
-
-    LIST = [LEFT_BENIGN, RIGHT_BENIGN, LEFT_MALIGNANT, RIGHT_MALIGNANT]
-
-
 INPUT_SIZE_DICT = {
-    VIEWS.L_CC: (2677, 1942),
-    VIEWS.R_CC: (2677, 1942),
-    VIEWS.L_MLO: (2974, 1748),
-    VIEWS.R_MLO: (2974, 1748),
+    VIEWS.L_CC: (2944, 1920),
+    VIEWS.R_CC: (2944, 1920),
+    VIEWS.L_MLO: (2944, 1920),
+    VIEWS.R_MLO: (2944, 1920),
 }

@@ -1,24 +1,23 @@
 #!/bin/bash
 
 NUM_PROCESSES=10
-DEVICE_TYPE='gpu'
-NUM_EPOCHS=10
+DEVICE_TYPE='cpu'
 GPU_NUMBER=0
 
 MODEL_PATH='models/sample_model.p'
 CROPPED_IMAGE_PATH='sample_data/cropped_images'
+SEG_PATH='sample_data/segmentation'
 EXAM_LIST_PATH='sample_data/data.pkl'
-PREDICTIONS_PATH='sample_output/predictions.csv'
+OUTPUT_PATH='sample_output'
 PYTHONPATH=$(pwd):$PYTHONPATH
 
 echo 'Run Classifier'
 python3 src/modeling/run_model.py \
-    --model-path $IMAGE_MODEL_PATH \
+    --model-path $MODEL_PATH \
     --data-path $EXAM_LIST_PATH \
     --image-path $CROPPED_IMAGE_PATH \
-    --output-path $PREDICTIONS_PATH \
-    --use-augmentation \
-    --num-epochs $NUM_EPOCHS \
+    --segmentation-path $SEG_PATH \
+    --output-path $OUTPUT_PATH \
     --device-type $DEVICE_TYPE \
     --gpu-number $GPU_NUMBER
 

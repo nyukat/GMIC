@@ -23,101 +23,89 @@
 """
 Defines architectures for breast cancer classification models. 
 """
-import collections as col
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
-import src.modeling.layers as layers
-from src.constants import VIEWS, VIEWANGLES
-
-
-class SplitBreastModel(nn.Module):
-    def __init__(self, input_channels):
-        super(SplitBreastModel, self).__init__()
-
-        self.four_view_resnet = FourViewResNet(input_channels)
-
-        self.fc1_cc = nn.Linear(256 * 2, 256 * 2)
-        self.fc1_mlo = nn.Linear(256 * 2, 256 * 2)
-        self.output_layer_cc = layers.OutputLayer(256 * 2, (4, 2))
-        self.output_layer_mlo = layers.OutputLayer(256 * 2, (4, 2))
-
-        self.all_views_avg_pool = layers.AllViewsAvgPool()
-        self.all_views_pad = layers.AllViewsPad()
-        self.all_views_gaussian_noise_layer = layers.AllViewsGaussianNoise(0.01)
-
-    def forward(self, x):
-        h = self.all_views_gaussian_noise_layer(x)
-        result = self.four_view_resnet(h)
-        h = self.all_views_avg_pool(result)
-
-        # Pool, flatten, and fully connected layers
-        h_cc = torch.cat([h[VIEWS.L_CC], h[VIEWS.R_CC]], dim=1)
-        h_mlo = torch.cat([h[VIEWS.L_MLO], h[VIEWS.R_MLO]], dim=1)
-
-        h_cc = F.relu(self.fc1_cc(h_cc))
-        h_mlo = F.relu(self.fc1_mlo(h_mlo))
-
-        h_cc = self.output_layer_cc(h_cc)
-        h_mlo = self.output_layer_mlo(h_mlo)
-
-        h = {
-            VIEWANGLES.CC: h_cc,
-            VIEWANGLES.MLO: h_mlo,
-        }
-
-        return h
+import src.utilities.tools as tools
+from torchvision.models.resnet import conv3x3
 
 
-class FourViewResNet(nn.Module):
-    def __init__(self, input_channels):
-        super(FourViewResNet, self).__init__()
+class BasicBlockV2(nn.Module):
+    """
+    Basic Residual Block of ResNet V2
+    """
+    expansion = 1
 
-        self.cc = ViewResNetV2(
-            input_channels=input_channels, 
-            num_filters=16,
-            first_layer_kernel_size=7, 
-            first_layer_conv_stride=2,
-            blocks_per_layer_list=[2, 2, 2, 2, 2], 
-            block_strides_list=[1, 2, 2, 2, 2], 
-            block_fn=layers.BasicBlockV2,
-            first_layer_padding=0,
-            first_pool_size=3, 
-            first_pool_stride=2, 
-            first_pool_padding=0,
-            growth_factor=2
-        )
-        self.mlo = ViewResNetV2(
-            input_channels=input_channels, 
-            num_filters=16,
-            first_layer_kernel_size=7, 
-            first_layer_conv_stride=2,
-            blocks_per_layer_list=[2, 2, 2, 2, 2], 
-            block_strides_list=[1, 2, 2, 2, 2], 
-            block_fn=layers.BasicBlockV2,
-            first_layer_padding=0,
-            first_pool_size=3, 
-            first_pool_stride=2, 
-            first_pool_padding=0,
-            growth_factor=2
-        )
-        self.l_cc = self.cc
-        self.l_mlo = self.mlo
-        self.r_cc = self.cc
-        self.r_mlo = self.mlo
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(BasicBlockV2, self).__init__()
+        self.relu = nn.ReLU(inplace=True)
+
+        self.bn1 = nn.BatchNorm2d(inplanes)
+        self.conv1 = conv3x3(inplanes, planes, stride=stride)
+        self.bn2 = nn.BatchNorm2d(planes)
+        self.conv2 = conv3x3(planes, planes, stride=1)
+
+        self.downsample = downsample
+        self.stride = stride
 
     def forward(self, x):
-        h_dict = col.OrderedDict()
-        h_dict[VIEWS.L_CC] = self.l_cc(x[VIEWS.L_CC])
-        h_dict[VIEWS.R_CC] = self.r_cc(x[VIEWS.R_CC])
-        h_dict[VIEWS.L_MLO] = self.l_mlo(x[VIEWS.L_MLO])
-        h_dict[VIEWS.R_MLO] = self.r_mlo(x[VIEWS.R_MLO])
-        return h_dict
+        residual = x
+
+        # Phase 1
+        out = self.bn1(x)
+        out = self.relu(out)
+        if self.downsample is not None:
+            residual = self.downsample(out)
+        out = self.conv1(out)
+
+        # Phase 2
+        out = self.bn2(out)
+        out = self.relu(out)
+        out = self.conv2(out)
+
+        out += residual
+
+        return out
 
 
-class ViewResNetV2(nn.Module):
+class BasicBlockV1(nn.Module):
+    """
+    Basic Residual Block of ResNet V1
+    """
+    expansion = 1
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(BasicBlockV1, self).__init__()
+        self.conv1 = conv3x3(inplanes, planes, stride)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3(planes, planes)
+        self.bn2 = nn.BatchNorm2d(planes)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+
+class ResNetV2(nn.Module):
     """
     Adapted fom torchvision ResNet, converted to v2
     """
@@ -128,7 +116,7 @@ class ViewResNetV2(nn.Module):
                  first_layer_padding=0,
                  first_pool_size=None, first_pool_stride=None, first_pool_padding=0,
                  growth_factor=2):
-        super(ViewResNetV2, self).__init__()
+        super(ResNetV2, self).__init__()
         self.first_conv = nn.Conv2d(
             in_channels=input_channels, out_channels=num_filters,
             kernel_size=first_layer_kernel_size,
@@ -187,3 +175,373 @@ class ViewResNetV2(nn.Module):
             layers_.append(block(self.inplanes, planes))
 
         return nn.Sequential(*layers_)
+
+
+class ResNetV1(nn.Module):
+    """
+    Class that represents a ResNet with classifier sequence removed
+    """
+    def __init__(self, initial_filters, block, layers, input_channels=1):
+
+        self.inplanes = initial_filters
+        self.num_layers = len(layers)
+        super(ResNetV1, self).__init__()
+
+        # initial sequence
+        # the first sequence only has 1 input channel which is different from original ResNet
+        self.conv1 = nn.Conv2d(input_channels, initial_filters, kernel_size=7, stride=2, padding=3, bias=False)
+        self.bn1 = nn.BatchNorm2d(initial_filters)
+        self.relu = nn.ReLU(inplace=True)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
+        # residual sequence
+        for i in range(self.num_layers):
+            num_filters = initial_filters * pow(2,i)
+            num_stride = (1 if i == 0 else 2)
+            setattr(self, 'layer{0}'.format(i+1), self._make_layer(block, num_filters, layers[i], stride=num_stride))
+        self.num_filter_last_seq = initial_filters * pow(2, self.num_layers-1)
+
+        # initialization
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+
+    def _make_layer(self, block, planes, blocks, stride=1):
+        downsample = None
+        if stride != 1 or self.inplanes != planes * block.expansion:
+            downsample = nn.Sequential(
+                nn.Conv2d(self.inplanes, planes * block.expansion,
+                          kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(planes * block.expansion),
+            )
+
+        layers = []
+        layers.append(block(self.inplanes, planes, stride, downsample))
+        self.inplanes = planes * block.expansion
+        for i in range(1, blocks):
+            layers.append(block(self.inplanes, planes))
+
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        # first sequence
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+
+        # residual sequences
+        for i in range(self.num_layers):
+            x = getattr(self, 'layer{0}'.format(i+1))(x)
+        return x
+
+
+class AbstractMILUnit:
+    """
+    An abstract class that represents an MIL unit module
+    """
+    def __init__(self, parameters, parent_module):
+        self.parameters = parameters
+        self.parent_module = parent_module
+
+
+class PostProcessingStandard(nn.Module):
+    """
+    Unit in Global Network that takes in x_out and produce CAM
+    """
+    def __init__(self, parameters):
+        super(PostProcessingStandard, self).__init__()
+        # map all filters to output classes
+        self.gn_conv_last = nn.Conv2d(256, 2, (1, 1), bias=False)
+
+    def forward(self, x_out):
+        out = self.gn_conv_last(x_out)
+        return torch.sigmoid(out)
+
+
+class LocalizationModule(AbstractMILUnit):
+    """
+    Localization Module
+    A generic one that divides the logic flow into downsampling and postprocessing.
+    """
+    def __init__(self, parameters, parent_module):
+        super(LocalizationModule, self).__init__(parameters, parent_module)
+        # downsampling-branch
+        self.downsampling_branch = ResNetV2(input_channels=1, num_filters=16,
+                 # first conv layer
+                 first_layer_kernel_size=(7,7), first_layer_conv_stride=2,
+                 first_layer_padding=3,
+                 # first pooling layer
+                 first_pool_size=3, first_pool_stride=2, first_pool_padding=0,
+                 # res blocks architecture
+                 blocks_per_layer_list=[2, 2, 2, 2, 2],
+                 block_strides_list=[1, 2, 2, 2, 2],
+                 block_fn=BasicBlockV2,
+                 growth_factor=2)
+        # post-processing
+        self.postprocess_module = PostProcessingStandard(parameters)
+
+    def add_layers(self):
+        self.parent_module.ds_net = self.downsampling_branch
+        self.parent_module.left_postprocess_net = self.postprocess_module
+
+    def forward(self, x):
+        # retrieve results from downsampling network at all 4 levels
+        last_feature_map = self.downsampling_branch.forward(x)
+        # feed into postprocessing network
+        cam = self.postprocess_module.forward(last_feature_map)
+        return cam
+
+
+class TopTPercentAggregationFunction(AbstractMILUnit):
+    """
+    An aggregator that uses the CAM to compute the y_cam.
+    Use the sum of topK value
+    """
+    def __init__(self, parameters, parent_module):
+        super(TopTPercentAggregationFunction, self).__init__(parameters, parent_module)
+        self.percent_k = parameters["percent_t"]
+        self.parent_module = parent_module
+
+    def forward(self, cam):
+        batch_size, num_class, W, H = cam.size()
+        cam_flatten = cam.view(batch_size, num_class, -1)
+        top_k = int(round(W*H*self.percent_k))
+        selected_area = cam_flatten.topk(top_k, dim=2)[0]
+        return selected_area.mean(dim=2)
+
+
+class DetectionModuleGreedy(AbstractMILUnit):
+    """
+    A Regional Proposal Network instance that computes the locations of the crops
+    Greedy select crops with largest sums
+    """
+    def __init__(self, parameters, parent_module):
+        super(DetectionModuleGreedy, self).__init__(parameters, parent_module)
+        self.crop_method = "upper_left"
+        self.num_crops_per_class = parameters["K"]
+        self.crop_shape = parameters["crop_shape"]
+
+    def forward(self, x_original, cam_size, h_small):
+        """
+        Function that use the low-res image to determine the position of the high-res crops
+        :param x_original: N, C, H, W pytorch tensor
+        :param cam_size: (h, w)
+        :param h_small: N, C, h_h, w_h pytorch tensor
+        :return: N, num_classes*k, 2 numpy matrix; returned coordinates are corresponding to x_small
+        """
+        # retrieve parameters
+        _, _, H, W = x_original.size()
+        (h, w) = cam_size
+        N, C, h_h, w_h = h_small.size()
+
+        # make sure that the size of h_small == size of cam_size
+        assert h_h == h, "h_h!=h"
+        assert w_h == w, "w_h!=w"
+
+        # adjust crop_shape since crop shape is based on the original image
+        crop_x_adjusted = int(np.round(self.crop_shape[0] * h / H))
+        crop_y_adjusted = int(np.round(self.crop_shape[1] * w / W))
+        crop_shape_adjusted = (crop_x_adjusted, crop_y_adjusted)
+
+        # greedily find the box with max sum of weights
+        current_images = h_small
+        all_max_position = []
+        # combine channels
+        max_vals = current_images.view(N, C, -1).max(dim=2, keepdim=True)[0].unsqueeze(-1)
+        min_vals = current_images.view(N, C, -1).min(dim=2, keepdim=True)[0].unsqueeze(-1)
+        range_vals = max_vals - min_vals
+        normalize_images = current_images - min_vals
+        normalize_images = normalize_images / range_vals
+        current_images = normalize_images.sum(dim=1, keepdim=True)
+
+        for _ in range(self.num_crops_per_class):
+            max_pos = tools.get_max_window(current_images, crop_shape_adjusted, "avg")
+            all_max_position.append(max_pos)
+            mask = tools.generate_mask_uplft(current_images, crop_shape_adjusted, max_pos)
+            current_images = current_images * mask
+        return torch.cat(all_max_position, dim=1).data.cpu().numpy()
+
+
+class DetectionNetworkResNet(AbstractMILUnit):
+    """
+    A Detection Network unit instance that takes a crop and computes its hidden representation
+    Use ResNet
+    """
+    def add_layers(self):
+        """
+        Function that add layers to the parent module that implements nn.Module
+        :return:
+        """
+        self.parent_module.dn_resnet = ResNetV1(64, BasicBlockV1, [2,2,2,2], 3)
+
+    def forward(self, x_crop):
+        """
+        Function that takes in a single crop and return the hidden representation
+        :param x_crop: (N,C,h,w)
+        :return:
+        """
+        # forward propagte using ResNet
+        res = self.parent_module.dn_resnet(x_crop.expand(-1, 3, -1 , -1))
+        # global average pooling
+        res = res.mean(dim=2).mean(dim=2)
+        return res
+
+
+class MILGatedAttention(AbstractMILUnit):
+    """
+    A MIL unit instance that takes multiple hidden representations and compute the attention-weighted average
+    Use Gated Attention Mechanism in https://arxiv.org/pdf/1802.04712.pdf
+    """
+    def add_layers(self):
+        """
+        Function that add layers to the parent module that implements nn.Module
+        :return:
+        """
+        # The gated attention mechanism
+        self.parent_module.tanh = nn.Tanh()
+        self.parent_module.sigmoid = nn.Sigmoid()
+        self.parent_module.mil_attn_V = nn.Linear(512, 128, bias=False)
+        self.parent_module.mil_attn_U = nn.Linear(512, 128, bias=False)
+        self.parent_module.mil_attn_w = nn.Linear(128, 1, bias=False)
+        # classifier
+        self.parent_module.classifier_linear = nn.Linear(512, 2, bias=False)
+
+    def forward(self, h_crops):
+        """
+        Function that takes in the hidden representations of crops and use attention to generate a single hidden vector
+        :param h_small:
+        :param h_crops:
+        :return:
+        """
+        batch_size, num_crops, h_dim = h_crops.size()
+        h_crops_reshape = h_crops.view(batch_size * num_crops, h_dim)
+        # calculate the attn score
+        attn_projection = torch.sigmoid(self.parent_module.mil_attn_U(h_crops_reshape)) * \
+                          torch.tanh(self.parent_module.mil_attn_V(h_crops_reshape))
+        attn_score = self.parent_module.mil_attn_w(attn_projection)
+        # use softmax to map score to attention
+        attn_score_reshape = attn_score.view(batch_size, num_crops)
+        attn = F.softmax(attn_score_reshape, dim=1)
+
+        # final hidden vector
+        z_weighted_avg = torch.sum(attn.unsqueeze(-1) * h_crops, 1)
+
+        # map to the final layer
+        y_crops = torch.sigmoid(self.parent_module.classifier_linear(z_weighted_avg))
+        return attn, y_crops
+
+
+class GMIC(nn.Module):
+    """
+    Top level GMIC model
+    """
+    def __init__(self, parameters):
+        super(GMIC, self).__init__()
+
+        # save parameters
+        self.experiment_parameters = parameters
+        self.cam_size = parameters["cam_size"]
+
+        # construct networks
+        # localization module
+        self.loc_module = LocalizationModule(self.experiment_parameters, self)
+        self.loc_module.add_layers()
+
+        # aggregation function
+        self.aggregation_function = TopTPercentAggregationFunction(self.experiment_parameters, self)
+
+        # detection module
+        self.detection_module = DetectionModuleGreedy(self.experiment_parameters, self)
+
+        # detection network
+        self.detection_network = DetectionNetworkResNet(self.experiment_parameters, self)
+        self.detection_network.add_layers()
+
+        # MIL module
+        self.mil_module = MILGatedAttention(self.experiment_parameters, self)
+        self.mil_module.add_layers()
+
+    def _convert_crop_position(self, crops_x_small, cam_size, x_original):
+        """
+        Function that converts the crop locations from cam_size to x_original
+        :param crops_x_small: N, k*c, 2 numpy matrix
+        :param cam_size: (h,w)
+        :param x_original: N, C, H, W pytorch variable
+        :return: N, k*c, 2 numpy matrix
+        """
+        # retrieve the dimension of both the original image and the small version
+        h, w = cam_size
+        _, _, H, W = x_original.size()
+
+        # interpolate the 2d index in h_small to index in x_original
+        top_k_prop_x = crops_x_small[:, :, 0] / h
+        top_k_prop_y = crops_x_small[:, :, 1] / w
+        # sanity check
+        assert np.max(top_k_prop_x) <= 1.0, "top_k_prop_x >= 1.0"
+        assert np.min(top_k_prop_x) >= 0.0, "top_k_prop_x <= 0.0"
+        assert np.max(top_k_prop_y) <= 1.0, "top_k_prop_y >= 1.0"
+        assert np.min(top_k_prop_y) >= 0.0, "top_k_prop_y <= 0.0"
+        # interpolate the crop position from cam_size to x_original
+        top_k_interpolate_x = np.expand_dims(np.around(top_k_prop_x * H), -1)
+        top_k_interpolate_y = np.expand_dims(np.around(top_k_prop_y * W), -1)
+        top_k_interpolate_2d = np.concatenate([top_k_interpolate_x, top_k_interpolate_y], axis=-1)
+        return top_k_interpolate_2d
+
+    def _retrieve_crop(self, x_original_pytorch, crop_positions, crop_method):
+        """
+        Function that takes in the original image and cropping position and returns the crops
+        :param x_original_pytorch: PyTorch Tensor array (N,C,H,W)
+        :param crop_positions:
+        :return:
+        """
+        batch_size, num_crops, _ = crop_positions.shape
+        crop_h, crop_w = self.experiment_parameters["crop_shape"]
+
+        output = torch.ones((batch_size, num_crops, crop_h, crop_w))
+        if torch.cuda.is_available():
+            output = output.cuda()
+        for i in range(batch_size):
+            for j in range(num_crops):
+                tools.crop_pytorch(x_original_pytorch[i, 0, :, :],
+                                                    self.experiment_parameters["crop_shape"],
+                                                    crop_positions[i,j,:],
+                                                    output[i,j,:,:],
+                                                    method=crop_method)
+        return output
+
+    def forward(self, x_original):
+            """
+            :param x_original: N,H,W,C numpy matrix
+            :return:
+            """
+            # global network: x_small -> class activation map
+            # class activation map should have the same dimension with x_small
+            self.saliency_map = self.loc_module.forward(x_original)
+
+            # calculate y_cam
+            self.y_cam = self.aggregation_function.forward(self.saliency_map)
+
+            # region proposal network
+            small_x_locations = self.detection_module.forward(x_original, self.cam_size, self.saliency_map)
+
+            # convert crop locations that is on self.cam_size to x_original
+            self.patch_locations = self._convert_crop_position(small_x_locations, self.cam_size, x_original)
+
+            # patch retriever
+            crops_variable = self._retrieve_crop(x_original, self.patch_locations, self.detection_module.crop_method)
+            self.patches = crops_variable.data.cpu().numpy()
+
+            # detection network
+            batch_size, num_crops, I, J = crops_variable.size()
+            crops_variable = crops_variable.view(batch_size * num_crops, I, J).unsqueeze(1)
+            h_crops = self.detection_network.forward(crops_variable).view(batch_size, num_crops, -1)
+
+            # MIL module
+            self.patch_attns, self.y_mil = self.mil_module.forward(h_crops)
+
+            # final prediction
+            return 0.5 * self.y_cam + 0.5 * self.y_mil
