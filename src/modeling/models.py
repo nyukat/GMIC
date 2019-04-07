@@ -503,7 +503,7 @@ class GMIC(nn.Module):
         crop_h, crop_w = self.experiment_parameters["crop_shape"]
 
         output = torch.ones((batch_size, num_crops, crop_h, crop_w))
-        if torch.cuda.is_available():
+        if self.experiment_parameters["device_type"] == "gpu":
             output = output.cuda()
         for i in range(batch_size):
             for j in range(num_crops):
