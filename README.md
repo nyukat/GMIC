@@ -1,16 +1,25 @@
 # Globally-Aware Multiple Instance Classifier forBreast Cancer Screening
 
 ## TODO: 
-- resolve TODOs
-- edit prerequisite
+- change license informaiton in each file
 
 ## Introduction
-This is an implementation of the model used for TODO as described in our paper [TODO](https://todo). The implementation allows users to  get breast cancer predictions and visualization of saliency maps by applying one of our pretrained models.
+This is an implementation of the Globally-Aware Multiple Instance Classifier (GMIC) model as described in our paper [TODO](https://todo). The implementation allows users to get breast cancer predictions and visualization of saliency maps by applying one of our pretrained models. This model is implemented in PyTorch. 
 
-* Input images: 2 CC view mammography images and 2 MLO view mammography images, each of size 2944 x 19202. Each image is saved as 16-bit png file and gets standardized separately before being fed to the models.
-* Output: one prediction for each image, probability of benign and malignant findings: `left_benign`, `right_benign`, `left_malignant`, and `right_malignant`.
 
-This model creates predictions on each of four standard views of screening mammography (L-CC, R-CC, L-MLO, R-MLO) independently TODO. As a part of this repository, we provide TODO sample exams (in `sample_data/cropped_images` directory and exam list stored in `sample_data/data.pkl`). This model is implemented in PyTorch. 
+![alt text](https://github.com/nyukat/GMIC/blob/master/sample_data/sample_visualization.png)
+
+
+* Input: A mammography that is cropped to 2944 x 19202 and are saved as 16-bit png file. As a part of this repository, we provide 4 sample exams (in `sample_data/cropped_images` directory and exam list stored in `sample_data/data.pkl`) each of which includes 2 CC view mammography images and 2 MLO view mammography images.
+
+* Output: The GMIC model generates one prediction for each image: probability of benign and malignant findings. All predictions are saved into a csv file `$OUTPUT_PATH/predictions.csv` that contains the following columns: image_index, benign_pred, malignant_pred, benign_label, malignant_label. In addition, each input image is assoicated with a visualization file saved under `$OUTPUT_PATH/visualization`. An examplar visualization file is illustrated below. The 10 columns (from left to right) represents:
+  * input mammography with ground truth annotation (green=benign, red=malignant)
+  * patch map that illustrates the locations of ROI proposal patches (blue squares)
+  * saliency map for benign class
+  * saliency map for malignant class
+  * 6 ROI proposal patches with the associated attention score on top
+
+
 
 ## Prerequisites
 
