@@ -33,6 +33,11 @@ import tqdm
 import cv2
 import matplotlib.cm as cm
 
+# TODO: delete me when committing
+import sys
+sys.path.append("/Users/Melancardie/Dropbox/Documents/My Research/NYU/GMIC/")
+
+
 import src.utilities.pickling as pickling
 import src.utilities.tools as tools
 import src.modeling.models as models
