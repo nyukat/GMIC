@@ -1,4 +1,4 @@
-# Globally-Aware Multiple Instance Classifier forBreast Cancer Screening
+# Globally-Aware Multiple Instance Classifier for Breast Cancer Screening
 
 ## TODO: 
 - change license informaiton in each file
@@ -47,7 +47,7 @@ We recommend running the code with a gpu. To run the code with cpu only, please 
 The following variables defined in `run.sh` can be modified as needed:
 * `MODEL_PATH`: The path where the saved weights model is saved.
 * `CROPPED_IMAGE_PATH`: The directory where cropped mammograms are saved.
-* `SEG_PATH`: The directory where ground truth segmenation are saved.
+* `SEG_PATH`: The directory where ground truth segmenations are saved.
 * `EXAM_LIST_PATH`: The path where the exam list is stored.
 * `OUTPUT_PATH`: The path where visualization files and predicitons will be saved.
 * `DEVICE_TYPE`: Device type to use in heatmap generation and classifiers, either 'cpu' or 'gpu'.
@@ -80,12 +80,9 @@ image_index  |  benign_pred  |  malignant_pred  |  benign_label  |  malignant_la
 
 ## Data
 
-The original 12-bit mammograms are saved as rescaled 16-bit images to preserve the granularity of the pixel intensities, while still being correctly displayed in image viewers.
+`sample_data/cropped_images` contains 4 exams each of which includes 4 mammography images (L-CC, L-MLO, R-CC, R-MLO). All mammography images are saved in png format. The original 12-bit mammograms are saved as rescaled 16-bit images to preserve the granularity of the pixel intensities, while still being correctly displayed in image viewers.
 
-`sample_data/cropped_images` contains 4 exams each of which includes 4 mammography images (L-CC, L-MLO, R-CC, R-MLO). All mammography images are saved in png format.
-
-`sample_data/segmentatio` contains the 
-
+`sample_data/segmentation` contains the binary pixel-level segmentation labels for some exams. All segmentations are saved as png images.
 
 `sample_data/data.pkl` contains a list of exam information. Each exam is represented as a dictionary with the following format:
 
