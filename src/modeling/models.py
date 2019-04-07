@@ -324,6 +324,7 @@ class DetectionModuleGreedy(AbstractMILUnit):
         self.crop_method = "upper_left"
         self.num_crops_per_class = parameters["K"]
         self.crop_shape = parameters["crop_shape"]
+        self.use_gpu = parameters["device_type"]=="gpu"
 
     def forward(self, x_original, cam_size, h_small):
         """
@@ -361,7 +362,7 @@ class DetectionModuleGreedy(AbstractMILUnit):
         for _ in range(self.num_crops_per_class):
             max_pos = tools.get_max_window(current_images, crop_shape_adjusted, "avg")
             all_max_position.append(max_pos)
-            mask = tools.generate_mask_uplft(current_images, crop_shape_adjusted, max_pos)
+            mask = tools.generate_mask_uplft(current_images, crop_shape_adjusted, max_pos, self.use_gpu)
             current_images = current_images * mask
         return torch.cat(all_max_position, dim=1).data.cpu().numpy()
 

@@ -21,7 +21,7 @@
 # along with breast_cancer_classifier.  If not, see <http://www.gnu.org/licenses/>.
 # ==============================================================================
 """
-Defines utility functions for various tasks in breast_cancer_classifier.
+Defines utility functions for various tasks in GMIC.
 """
 import numpy as np
 import torch
@@ -210,7 +210,7 @@ def get_max_window(input_image, window_shape, pooling_logic="avg"):
     return upper_left_points
 
 
-def generate_mask_uplft(input_image, window_shape, upper_left_points):
+def generate_mask_uplft(input_image, window_shape, upper_left_points, use_gpu=False):
     """
     Function that generates mask that sets crops given upper_left
     corners to 0
@@ -227,7 +227,7 @@ def generate_mask_uplft(input_image, window_shape, upper_left_points):
     mask_y_min = upper_left_points[:,:,1]
     mask_y_max = upper_left_points[:,:,1] + window_w
     # generate masks
-    if torch.cuda.is_available():
+    if use_gpu:
         mask_x = Variable(torch.arange(0, H).cuda().view(-1, 1).repeat(N, C, 1, W))
         mask_y = Variable(torch.arange(0, W).cuda().view(1, -1).repeat(N, C, H, 1))
     else:
