@@ -45,10 +45,6 @@ def partition_batch(ls, size):
 def make_sure_in_range(val, min_val, max_val):
     """
     Function that make sure that min < val < max; otherwise return the limit value
-    :param val:
-    :param min:
-    :param max:
-    :return:
     """
     if val < min_val:
         return min_val
@@ -68,7 +64,6 @@ def crop(original_img, crop_shape, crop_position, method="center",
     :param crop_position:
     :param method: supported in ["center", "upper_left"]
     :param in_place: if in_place, the effective pixels in the crop will be flagged (1.0) in the original_img
-    :return:
     """
     # retrieve inputs
     I, J = original_img.shape
@@ -181,7 +176,7 @@ def get_max_window(input_image, window_shape, pooling_logic="avg"):
     input_image and return the UPPER_LEFT corner index with max sum
     :param input_image: N*C*H*W
     :param window_shape: h*w
-    :return: N*C*2
+    :return: N*C*2 tensor
     """
     N, C, H, W = input_image.size()
     if pooling_logic == "avg":
@@ -217,7 +212,6 @@ def generate_mask_uplft(input_image, window_shape, upper_left_points, use_gpu=Fa
     :param input_image:
     :param window_shape:
     :param upper_left_points:
-    :return:
     """
     N, C, H, W = input_image.size()
     window_h, window_w = window_shape
@@ -227,22 +221,15 @@ def generate_mask_uplft(input_image, window_shape, upper_left_points, use_gpu=Fa
     mask_y_min = upper_left_points[:,:,1]
     mask_y_max = upper_left_points[:,:,1] + window_w
     # generate masks
+    mask_x = Variable(torch.arange(0, H).view(-1, 1).repeat(N, C, 1, W))
+    mask_y = Variable(torch.arange(0, W).view(1, -1).repeat(N, C, H, 1))
     if use_gpu:
-        mask_x = Variable(torch.arange(0, H).cuda().view(-1, 1).repeat(N, C, 1, W))
-        mask_y = Variable(torch.arange(0, W).cuda().view(1, -1).repeat(N, C, H, 1))
-    else:
-        mask_x = Variable(torch.arange(0, H).view(-1, 1).repeat(N, C, 1, W))
-        mask_y = Variable(torch.arange(0, W).view(1, -1).repeat(N, C, H, 1))
-    if torch.__version__ == "0.4.1":
-        x_gt_min = mask_x >= mask_x_min.unsqueeze(-1).unsqueeze(-1)
-        x_ls_max = mask_x < mask_x_max.unsqueeze(-1).unsqueeze(-1)
-        y_gt_min = mask_y >= mask_y_min.unsqueeze(-1).unsqueeze(-1)
-        y_ls_max = mask_y < mask_y_max.unsqueeze(-1).unsqueeze(-1)
-    else:
-        x_gt_min = mask_x >= mask_x_min.unsqueeze(-1).unsqueeze(-1).float()
-        x_ls_max = mask_x < mask_x_max.unsqueeze(-1).unsqueeze(-1).float()
-        y_gt_min = mask_y >= mask_y_min.unsqueeze(-1).unsqueeze(-1).float()
-        y_ls_max = mask_y < mask_y_max.unsqueeze(-1).unsqueeze(-1).float()
+        mask_x = mask_x.cuda()
+        mask_y = mask_y.cuda()
+    x_gt_min = mask_x.float() >= mask_x_min.unsqueeze(-1).unsqueeze(-1).float()
+    x_ls_max = mask_x.float() < mask_x_max.unsqueeze(-1).unsqueeze(-1).float()
+    y_gt_min = mask_y.float() >= mask_y_min.unsqueeze(-1).unsqueeze(-1).float()
+    y_ls_max = mask_y.float() < mask_y_max.unsqueeze(-1).unsqueeze(-1).float()
 
     # since logic operation is not supported for variable
     # I used * for logic ANd

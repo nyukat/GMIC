@@ -1,18 +1,20 @@
 #!/bin/bash
 
 NUM_PROCESSES=10
-DEVICE_TYPE='cpu'
+DEVICE_TYPE='gpu'
 GPU_NUMBER=0
 
-MODEL_PATH='models/sample_model.p'
+#MODEL_PATH='models/sample_model.p'
+MODEL_PATH='models/new_model.p'
 CROPPED_IMAGE_PATH='sample_data/cropped_images'
 SEG_PATH='sample_data/segmentation'
 EXAM_LIST_PATH='sample_data/data.pkl'
 OUTPUT_PATH='sample_output'
-PYTHONPATH=$(pwd):$PYTHONPATH
+#PYTHONPATH=$(pwd):$PYTHONPATH
+export PYTHONPATH=$(pwd):$PYTHONPATH
 
 echo 'Run Classifier'
-python3 src/modeling/run_model.py \
+python3 src/scripts/run_model.py \
     --model-path $MODEL_PATH \
     --data-path $EXAM_LIST_PATH \
     --image-path $CROPPED_IMAGE_PATH \
