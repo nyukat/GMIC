@@ -4,25 +4,24 @@
 - new title
 - change license informaiton in each file
 - add reference to our new paper
+- update prediction example
 
 
 ## Introduction
 This is an implementation of the Globally-Aware Multiple Instance Classifier (GMIC) model as described in our paper [TODO](https://todo). The architecture of the proposed model is shown below.
 
-![alt text](https://github.com/nyukat/GMIC/blob/master/model_structure.pdf)
+![alt text](https://github.com/nyukat/GMIC/blob/master/mia_structure.png)
 
 Highlights of GMIC:
-- High accuracy: GMIC outperformed ResNet-34 and Faster R-CNN
-- High efficiency: Compared to ResNet-34, GMIC has 28.8% fewer parameters, uses 78.43% less GPU memory, is 4.1x faster during inference and 5.6x faster during training.
-- Weakly supervised lesion localization: Despite being trained with only image-level labels indicating the presene of any benign or malignant lesion, GMIC is able to generate pixel-level saliency maps (shown below) that provide additional interpretability. 
-
-The implementation allows users to get breast cancer predictions and visualization of saliency maps by applying one of our pretrained models. This model is implemented in PyTorch. 
-
+- **High Accuracy**: GMIC outperformed ResNet-34 and Faster R-CNN
+- **High Efficiency**: Compared to ResNet-34, GMIC has **28.8%** fewer parameters, uses **78.43%** less GPU memory, is **4.1x** faster during inference and **5.6x** faster during training.
+- **Weakly Supervised Lesion Localization**: Despite being trained with only image-level labels indicating the presene of any benign or malignant lesion, GMIC is able to generate pixel-level saliency maps (shown below) that provide additional interpretability. 
 
 ![alt text](https://github.com/nyukat/GMIC/blob/master/sample_data/sample_visualization.png)
 
+The implementation allows users to get breast cancer predictions and visualization of saliency maps by applying one of our pretrained models. This model is implemented in PyTorch. 
 
-* Input: A mammography image that is cropped to 2944 x 19202 and are saved as 16-bit png file. As a part of this repository, we provide 4 sample exams (in `sample_data/cropped_images` directory and exam list stored in `sample_data/data.pkl`) each of which includes 2 CC view mammography images and 2 MLO view mammography images.
+* Input: A mammography image that is cropped to 2944 x 1920 and are saved as 16-bit png file. As a part of this repository, we provide 4 sample exams (in `sample_data/cropped_images` directory and exam list stored in `sample_data/data.pkl`) each of which includes 2 CC view mammography images and 2 MLO view mammography images.
 
 * Output: The GMIC model generates one prediction for each image: probability of benign and malignant findings. All predictions are saved into a csv file `$OUTPUT_PATH/predictions.csv` that contains the following columns: image_index, benign_pred, malignant_pred, benign_label, malignant_label. In addition, each input image is assoicated with a visualization file saved under `$OUTPUT_PATH/visualization`. An examplar visualization file is illustrated above. The 10 columns (from left to right) represents:
   * input mammography with ground truth annotation (green=benign, red=malignant)
@@ -133,12 +132,19 @@ In their original formats, images from `L-CC` and `L-MLO` views face right direc
 If you found this code useful, please cite our paper:
 
 **TODO**\
-TODO\
-2019
 
-    @article{TODO, 
-        title = {TODO},
-        author = {TODO}, 
-        journal = {TODO},
-        year = {2019}
-    }
+
+**Globally-Aware Multiple Instance Classifier for Breast Cancer Screening**
+Shen, Yiqiu; Wu, Nan; Phang, Jason; Park, Jungkyu; Kim, Gene; Moy, Linda; Cho, Kyunghyun; Geras, Krzysztof J.
+
+Machine Learning in Medical Imaging - 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Proceedings. Springer , 2019. p. 18-26 (Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics); Vol. 11861 LNCS).
+
+@inproceedings{shen2019globally,
+  title={Globally-Aware Multiple Instance Classifier for Breast Cancer Screening},
+  author={Shen, Yiqiu and Wu, Nan and Phang, Jason and Park, Jungkyu and Kim, Gene and Moy, Linda and Cho, Kyunghyun and Geras, Krzysztof J},
+  booktitle={Machine Learning in Medical Imaging: 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Shenzhen, China, October 13, 2019, Proceedings},
+  volume={11861},
+  pages={18-26},
+  year={2019},
+  organization={Springer Nature}
+}
