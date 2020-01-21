@@ -1,10 +1,22 @@
-# Globally-Aware Multiple Instance Classifier for Breast Cancer Screening
+# TODO:New Title
 
 ## TODO: 
+- new title
 - change license informaiton in each file
+- add reference to our new paper
+
 
 ## Introduction
-This is an implementation of the Globally-Aware Multiple Instance Classifier (GMIC) model as described in our paper [TODO](https://todo). The implementation allows users to get breast cancer predictions and visualization of saliency maps by applying one of our pretrained models. This model is implemented in PyTorch. 
+This is an implementation of the Globally-Aware Multiple Instance Classifier (GMIC) model as described in our paper [TODO](https://todo). The architecture of the proposed model is shown below.
+
+![alt text](https://github.com/nyukat/GMIC/blob/master/model_structure.pdf)
+
+Highlights of GMIC:
+- High accuracy: GMIC outperformed ResNet-34 and Faster R-CNN
+- High efficiency: Compared to ResNet-34, GMIC has 28.8% fewer parameters, uses 78.43% less GPU memory, is 4.1x faster during inference and 5.6x faster during training.
+- Weakly supervised lesion localization: Despite being trained with only image-level labels indicating the presene of any benign or malignant lesion, GMIC is able to generate pixel-level saliency maps (shown below) that provide additional interpretability. 
+
+The implementation allows users to get breast cancer predictions and visualization of saliency maps by applying one of our pretrained models. This model is implemented in PyTorch. 
 
 
 ![alt text](https://github.com/nyukat/GMIC/blob/master/sample_data/sample_visualization.png)
