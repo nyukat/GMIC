@@ -17,8 +17,6 @@ Highlights of GMIC:
 - **High Efficiency**: Compared to ResNet-34, GMIC has **28.8%** fewer parameters, uses **78.43%** less GPU memory, is **4.1x** faster during inference and **5.6x** faster during training.
 - **Weakly Supervised Lesion Localization**: Despite being trained with only image-level labels indicating the presene of any benign or malignant lesion, GMIC is able to generate pixel-level saliency maps (shown below) that provide additional interpretability. 
 
-![alt text](https://github.com/nyukat/GMIC/blob/master/sample_data/sample_visualization.png)
-
 The implementation allows users to get breast cancer predictions and visualization of saliency maps by applying one of our pretrained models. This model is implemented in PyTorch. 
 
 * Input: A mammography image that is cropped to 2944 x 1920 and are saved as 16-bit png file. As a part of this repository, we provide 4 sample exams (in `sample_data/cropped_images` directory and exam list stored in `sample_data/data.pkl`) each of which includes 2 CC view mammography images and 2 MLO view mammography images.
@@ -29,6 +27,9 @@ The implementation allows users to get breast cancer predictions and visualizati
   * saliency map for benign class
   * saliency map for malignant class
   * 6 ROI proposal patches with the associated attention score on top
+  
+  ![alt text](https://github.com/nyukat/GMIC/blob/master/sample_data/sample_visualization.png)
+
 
 
 ## Prerequisites
@@ -51,7 +52,7 @@ This repository is licensed under the terms of the GNU AGPLv3 license.
 
 ## How to run the code
 
-`run.sh` will automatically run the entire pipeline and save the prediction results in csv. If running the individual Python scripts, please include the path to this repository in your `PYTHONPATH`. 
+`run.sh` will automatically run the entire pipeline and save the prediction results in csv. Note that you need to first cd to the project directory and then '. ./run.sh'. If running the individual Python scripts, please include the path to this repository in your `PYTHONPATH`. 
 
 We recommend running the code with a gpu. To run the code with cpu only, please change `DEVICE_TYPE` in run.sh to 'cpu'. 
 
@@ -85,8 +86,6 @@ image_index  |  benign_pred  |  malignant_pred  |  benign_label  |  malignant_la
 3_R-CC       |  0.0931       |  0.0391          |  0             |  0
 3_L-MLO      |  0.2546       |  0.5304          |  0             |  1
 3_R-MLO      |  0.0555       |  0.0614          |  0             |  0
-
-
 
 
 ## Data
