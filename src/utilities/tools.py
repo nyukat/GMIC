@@ -205,7 +205,7 @@ def get_max_window(input_image, window_shape, pooling_logic="avg"):
     return upper_left_points
 
 
-def generate_mask_uplft(input_image, window_shape, upper_left_points, use_gpu=False):
+def generate_mask_uplft(input_image, window_shape, upper_left_points, gpu_number):
     """
     Function that generates mask that sets crops given upper_left
     corners to 0
@@ -223,9 +223,10 @@ def generate_mask_uplft(input_image, window_shape, upper_left_points, use_gpu=Fa
     # generate masks
     mask_x = Variable(torch.arange(0, H).view(-1, 1).repeat(N, C, 1, W))
     mask_y = Variable(torch.arange(0, W).view(1, -1).repeat(N, C, H, 1))
-    if use_gpu:
-        mask_x = mask_x.cuda()
-        mask_y = mask_y.cuda()
+    if gpu_number is not None:
+        device = torch.device("cuda:{}".format(gpu_number))
+        mask_x = mask_x.cuda().to(device)
+        mask_y = mask_y.cuda().to(device)
     x_gt_min = mask_x.float() >= mask_x_min.unsqueeze(-1).unsqueeze(-1).float()
     x_ls_max = mask_x.float() < mask_x_max.unsqueeze(-1).unsqueeze(-1).float()
     y_gt_min = mask_y.float() >= mask_y_min.unsqueeze(-1).unsqueeze(-1).float()

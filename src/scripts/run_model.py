@@ -1,28 +1,48 @@
-# Copyright (C) 2019 Nan Wu, Jason Phang, Jungkyu Park, Yiqiu Shen, Zhe Huang, Masha Zorin, 
-#   Stanisław Jastrzębski, Thibault Févry, Joe Katsnelson, Eric Kim, Stacey Wolfson, Ujas Parikh, 
-#   Sushma Gaddam, Leng Leng Young Lin, Kara Ho, Joshua D. Weinstein, Beatriu Reig, Yiming Gao, 
-#   Hildegard Toth, Kristine Pysarenko, Alana Lewin, Jiyon Lee, Krystal Airola, Eralda Mema, 
-#   Stephanie Chung, Esther Hwang, Naziya Samreen, S. Gene Kim, Laura Heacock, Linda Moy, 
-#   Kyunghyun Cho, Krzysztof J. Geras
+# Copyright (C) 2020 Yiqiu Shen, Nan Wu, Jason Phang, Jungkyu Park, Kangning Liu,
+# Sudarshini Tyagi, Laura Heacock, S. Gene Kim, Linda Moy, Kyunghyun Cho, Krzysztof J. Geras
 #
-# This file is part of breast_cancer_classifier.
+# This file is part of GMIC.
 #
-# breast_cancer_classifier is free software: you can redistribute it and/or modify
+# GMIC is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 #
-# breast_cancer_classifier is distributed in the hope that it will be useful,
+# GMIC is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
-# along with breast_cancer_classifier.  If not, see <http://www.gnu.org/licenses/>.
+# along with GMIC.  If not, see <http://www.gnu.org/licenses/>.
 # ==============================================================================
+
 """
 Runs the model on sample data.
 """
+# Copyright (C) 2020 Yiqiu Shen, Nan Wu, Jason Phang, Jungkyu Park, Kangning Liu,
+# Sudarshini Tyagi, Laura Heacock, S. Gene Kim, Linda Moy, Kyunghyun Cho, Krzysztof J. Geras
+#
+# This file is part of GMIC.
+#
+# GMIC is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# GMIC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with GMIC.  If not, see <http://www.gnu.org/licenses/>.
+# ==============================================================================
+
+"""
+Script that executes the model pipeline.
+"""
+
 import argparse
 import numpy as np
 import os
@@ -129,7 +149,7 @@ def fetch_cancer_label_by_view(view, cancer_label):
         return cancer_label["right_benign"], cancer_label["right_malignant"]
 
 
-def run_model(model, exam_list, parameters):
+def run_model(model, exam_list, parameters, turn_on_visualization):
     """
     Run the model over images in sample_data.
     Save the predictions as csv and visualizations as png.
@@ -184,14 +204,15 @@ def run_model(model, exam_list, parameters):
                 pred_numpy = output.data.cpu().numpy()
                 benign_pred, malignant_pred = pred_numpy[0, 0], pred_numpy[0, 1]
                 # save visualization
-                saliency_maps = model.saliency_map.data.cpu().numpy()
-                patch_locations = model.patch_locations
-                patch_imgs = model.patches
-                patch_attentions = model.patch_attns[0, :].data.cpu().numpy()
-                save_dir = os.path.join(parameters["output_path"], "visualization", "{0}.png".format(short_file_path))
-                # visualize_example(loaded_image, saliency_maps, [benign_seg, malignant_seg],
-                #       patch_locations, patch_imgs, patch_attentions,
-                #       save_dir, parameters)
+                if turn_on_visualization:
+                    saliency_maps = model.saliency_map.data.cpu().numpy()
+                    patch_locations = model.patch_locations
+                    patch_imgs = model.patches
+                    patch_attentions = model.patch_attns[0, :].data.cpu().numpy()
+                    save_dir = os.path.join(parameters["output_path"], "visualization", "{0}.png".format(short_file_path))
+                    visualize_example(loaded_image, saliency_maps, [benign_seg, malignant_seg],
+                          patch_locations, patch_imgs, patch_attentions,
+                          save_dir, parameters)
                 # propagate holders
                 benign_label, malignant_label = fetch_cancer_label_by_view(view, datum["cancer_label"])
                 pred_dict["image_index"].append(short_file_path)
@@ -202,9 +223,9 @@ def run_model(model, exam_list, parameters):
     return pd.DataFrame(pred_dict)
 
 
-def load_run_save(model_path, data_path, output_path, parameters):
+def load_run_save(model_path, data_path, output_path, parameters, turn_on_visualization):
     """
-    Outputs the predictions as csv file
+    Load the model, run on sample data, and save the predictions as csv file
     """
     # construct model
     model = gmic.GMIC(parameters)
@@ -219,12 +240,13 @@ def load_run_save(model_path, data_path, output_path, parameters):
     os.makedirs(output_path, exist_ok=True)
     os.makedirs(os.path.join(output_path, "visualization"), exist_ok=True)
     # run the model on the dataset
-    output_df = run_model(model, exam_list, parameters)
+    output_df = run_model(model, exam_list, parameters, turn_on_visualization)
     # save the predictions
     output_df.to_csv(os.path.join(output_path, "predictions.csv"), index=False, float_format='%.4f')
 
 
 def main():
+    # retrieve command line arguments
     parser = argparse.ArgumentParser(description='Run image-only model or image+heatmap model')
     parser.add_argument('--model-path', required=True)
     parser.add_argument('--data-path', required=True)
@@ -233,6 +255,7 @@ def main():
     parser.add_argument('--output-path', required=True)
     parser.add_argument('--device-type', default="cpu", choices=['gpu', 'cpu'])
     parser.add_argument("--gpu-number", type=int, default=0)
+    parser.add_argument("--visualization-flag", action="store_true", default=False)
     args = parser.parse_args()
 
     parameters = {
@@ -254,8 +277,8 @@ def main():
         data_path=args.data_path,
         output_path=args.output_path,
         parameters=parameters,
+        turn_on_visualization=args.visualization_flag,
     )
-
 
 if __name__ == "__main__":
     main()

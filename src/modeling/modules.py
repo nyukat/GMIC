@@ -1,28 +1,26 @@
-# Copyright (C) 2019 Nan Wu, Jason Phang, Jungkyu Park, Yiqiu Shen, Zhe Huang, Masha Zorin, 
-#   Stanisław Jastrzębski, Thibault Févry, Joe Katsnelson, Eric Kim, Stacey Wolfson, Ujas Parikh, 
-#   Sushma Gaddam, Leng Leng Young Lin, Kara Ho, Joshua D. Weinstein, Beatriu Reig, Yiming Gao, 
-#   Hildegard Toth, Kristine Pysarenko, Alana Lewin, Jiyon Lee, Krystal Airola, Eralda Mema, 
-#   Stephanie Chung, Esther Hwang, Naziya Samreen, S. Gene Kim, Laura Heacock, Linda Moy, 
-#   Kyunghyun Cho, Krzysztof J. Geras
+# Copyright (C) 2020 Yiqiu Shen, Nan Wu, Jason Phang, Jungkyu Park, Kangning Liu,
+# Sudarshini Tyagi, Laura Heacock, S. Gene Kim, Linda Moy, Kyunghyun Cho, Krzysztof J. Geras
 #
-# This file is part of breast_cancer_classifier.
+# This file is part of GMIC.
 #
-# breast_cancer_classifier is free software: you can redistribute it and/or modify
+# GMIC is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 #
-# breast_cancer_classifier is distributed in the hope that it will be useful,
+# GMIC is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
-# along with breast_cancer_classifier.  If not, see <http://www.gnu.org/licenses/>.
+# along with GMIC.  If not, see <http://www.gnu.org/licenses/>.
 # ==============================================================================
+
 """
 Defines modules for breast cancer classification models.
 """
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -249,7 +247,7 @@ class AbstractMILUnit:
 
 class PostProcessingStandard(nn.Module):
     """
-    Unit in Global Network that takes in x_out and produce CAM
+    Unit in Global Network that takes in x_out and produce saliency maps
     """
     def __init__(self, parameters):
         super(PostProcessingStandard, self).__init__()
@@ -261,13 +259,12 @@ class PostProcessingStandard(nn.Module):
         return torch.sigmoid(out)
 
 
-class LocalizationModule(AbstractMILUnit):
+class GlobalNetwork(AbstractMILUnit):
     """
-    Localization Module
-    A generic one that divides the logic flow into downsampling and postprocessing.
+    Implementation of Global Network using ResNet-22
     """
     def __init__(self, parameters, parent_module):
-        super(LocalizationModule, self).__init__(parameters, parent_module)
+        super(GlobalNetwork, self).__init__(parameters, parent_module)
         # downsampling-branch
         self.downsampling_branch = ResNetV2(input_channels=1, num_filters=16,
                  # first conv layer
@@ -297,7 +294,7 @@ class LocalizationModule(AbstractMILUnit):
 
 class TopTPercentAggregationFunction(AbstractMILUnit):
     """
-    An aggregator that uses the CAM to compute the y_cam.
+    An aggregator that uses the SM to compute the y_global.
     Use the sum of topK value
     """
     def __init__(self, parameters, parent_module):
@@ -313,17 +310,17 @@ class TopTPercentAggregationFunction(AbstractMILUnit):
         return selected_area.mean(dim=2)
 
 
-class DetectionModuleGreedy(AbstractMILUnit):
+class RetrieveROIModule(AbstractMILUnit):
     """
     A Regional Proposal Network instance that computes the locations of the crops
     Greedy select crops with largest sums
     """
     def __init__(self, parameters, parent_module):
-        super(DetectionModuleGreedy, self).__init__(parameters, parent_module)
+        super(RetrieveROIModule, self).__init__(parameters, parent_module)
         self.crop_method = "upper_left"
         self.num_crops_per_class = parameters["K"]
         self.crop_shape = parameters["crop_shape"]
-        self.use_gpu = parameters["device_type"]=="gpu"
+        self.gpu_number = None if parameters["device_type"]!="gpu" else parameters["gpu_number"]
 
     def forward(self, x_original, cam_size, h_small):
         """
@@ -361,14 +358,14 @@ class DetectionModuleGreedy(AbstractMILUnit):
         for _ in range(self.num_crops_per_class):
             max_pos = tools.get_max_window(current_images, crop_shape_adjusted, "avg")
             all_max_position.append(max_pos)
-            mask = tools.generate_mask_uplft(current_images, crop_shape_adjusted, max_pos, self.use_gpu)
+            mask = tools.generate_mask_uplft(current_images, crop_shape_adjusted, max_pos, self.gpu_number)
             current_images = current_images * mask
         return torch.cat(all_max_position, dim=1).data.cpu().numpy()
 
 
-class DetectionNetworkResNet(AbstractMILUnit):
+class LocalNetwork(AbstractMILUnit):
     """
-    A Detection Network unit instance that takes a crop and computes its hidden representation
+    The local network that takes a crop and computes its hidden representation
     Use ResNet
     """
     def add_layers(self):
@@ -391,9 +388,9 @@ class DetectionNetworkResNet(AbstractMILUnit):
         return res
 
 
-class MILGatedAttention(AbstractMILUnit):
+class AttentionModule(AbstractMILUnit):
     """
-    A MIL unit instance that takes multiple hidden representations and compute the attention-weighted average
+    The attention module takes multiple hidden representations and compute the attention-weighted average
     Use Gated Attention Mechanism in https://arxiv.org/pdf/1802.04712.pdf
     """
     def add_layers(self):

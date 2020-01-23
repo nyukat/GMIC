@@ -1,3 +1,26 @@
+# Copyright (C) 2020 Yiqiu Shen, Nan Wu, Jason Phang, Jungkyu Park, Kangning Liu,
+# Sudarshini Tyagi, Laura Heacock, S. Gene Kim, Linda Moy, Kyunghyun Cho, Krzysztof J. Geras
+#
+# This file is part of GMIC.
+#
+# GMIC is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# GMIC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with GMIC.  If not, see <http://www.gnu.org/licenses/>.
+# ==============================================================================
+
+"""
+Module that define the core logic of GMIC
+"""
+
 import torch
 import torch.nn as nn
 import numpy as np
@@ -14,26 +37,26 @@ class GMIC(nn.Module):
         self.cam_size = parameters["cam_size"]
 
         # construct networks
-        # localization module
-        self.loc_module = m.LocalizationModule(self.experiment_parameters, self)
-        self.loc_module.add_layers()
+        # global network
+        self.global_network = m.GlobalNetwork(self.experiment_parameters, self)
+        self.global_network.add_layers()
 
         # aggregation function
         self.aggregation_function = m.TopTPercentAggregationFunction(self.experiment_parameters, self)
 
         # detection module
-        self.detection_module = m.DetectionModuleGreedy(self.experiment_parameters, self)
+        self.retrieve_roi_crops = m.RetrieveROIModule(self.experiment_parameters, self)
 
         # detection network
-        self.detection_network = m.DetectionNetworkResNet(self.experiment_parameters, self)
-        self.detection_network.add_layers()
+        self.local_network = m.LocalNetwork(self.experiment_parameters, self)
+        self.local_network.add_layers()
 
         # MIL module
-        self.mil_module = m.MILGatedAttention(self.experiment_parameters, self)
-        self.mil_module.add_layers()
+        self.attention_module = m.AttentionModule(self.experiment_parameters, self)
+        self.attention_module.add_layers()
 
         # fusion branch
-        self.fusion_dnn = nn.Linear(768, 2)
+        self.fusion_network = nn.Linear(768, 2)
 
     def _convert_crop_position(self, crops_x_small, cam_size, x_original):
         """
@@ -73,7 +96,8 @@ class GMIC(nn.Module):
 
         output = torch.ones((batch_size, num_crops, crop_h, crop_w))
         if self.experiment_parameters["device_type"] == "gpu":
-            output = output.cuda()
+            device = torch.device("cuda:{}".format(self.experiment_parameters["gpu_number"]))
+            output = output.cuda().to(device)
         for i in range(batch_size):
             for j in range(num_crops):
                 tools.crop_pytorch(x_original_pytorch[i, 0, :, :],
@@ -87,38 +111,38 @@ class GMIC(nn.Module):
     def forward(self, x_original):
         """
         :param x_original: N,H,W,C numpy matrix
-        :return:
         """
         # global network: x_small -> class activation map
-        # class activation map should have the same dimension with x_small
-        h_g, self.saliency_map = self.loc_module.forward(x_original)
+        h_g, self.saliency_map = self.global_network.forward(x_original)
 
-        # calculate y_cam
-        self.y_cam = self.aggregation_function.forward(self.saliency_map)
+        # calculate y_global
+        # note that y_global is not directly used in inference
+        self.y_global = self.aggregation_function.forward(self.saliency_map)
 
         # region proposal network
-        small_x_locations = self.detection_module.forward(x_original, self.cam_size, self.saliency_map)
+        small_x_locations = self.retrieve_roi_crops.forward(x_original, self.cam_size, self.saliency_map)
 
         # convert crop locations that is on self.cam_size to x_original
         self.patch_locations = self._convert_crop_position(small_x_locations, self.cam_size, x_original)
 
         # patch retriever
-        crops_variable = self._retrieve_crop(x_original, self.patch_locations, self.detection_module.crop_method)
+        crops_variable = self._retrieve_crop(x_original, self.patch_locations, self.retrieve_roi_crops.crop_method)
         self.patches = crops_variable.data.cpu().numpy()
 
         # detection network
         batch_size, num_crops, I, J = crops_variable.size()
         crops_variable = crops_variable.view(batch_size * num_crops, I, J).unsqueeze(1)
-        h_crops = self.detection_network.forward(crops_variable).view(batch_size, num_crops, -1)
+        h_crops = self.local_network.forward(crops_variable).view(batch_size, num_crops, -1)
 
         # MIL module
-        z, self.patch_attns, self.y_mil = self.mil_module.forward(h_crops)
+        # y_local is not directly used during inference
+        z, self.patch_attns, self.y_local = self.attention_module.forward(h_crops)
 
         # fusion branch
         # use max pooling to collapse the feature map
         g1, _ = torch.max(h_g, dim=2)
         global_vec, _ = torch.max(g1, dim=2)
         concat_vec = torch.cat([global_vec, z], dim=1)
-        self.y_fusion = torch.sigmoid(self.fusion_dnn(concat_vec))
+        self.y_fusion = torch.sigmoid(self.fusion_network(concat_vec))
 
         return self.y_fusion
