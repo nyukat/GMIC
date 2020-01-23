@@ -10,7 +10,9 @@
 ## Introduction
 This is an implementation of the Globally-Aware Multiple Instance Classifier (GMIC) model as described in our paper [TODO](https://todo). The architecture of the proposed model is shown below.
 
-![alt text](https://github.com/nyukat/GMIC/blob/master/mia_structure.png)
+<p align="center">
+  <img width="793" height="729" src="https://github.com/nyukat/GMIC/blob/master/mia_structure.png">
+</p>
 
 Highlights of GMIC:
 - **High Accuracy**: GMIC outperformed ResNet-34 and Faster R-CNN
@@ -28,7 +30,7 @@ The implementation allows users to get breast cancer predictions and visualizati
   * saliency map for malignant class
   * 6 ROI proposal patches with the associated attention score on top
   
-  ![alt text](https://github.com/nyukat/GMIC/blob/master/sample_data/sample_visualization.png)
+![alt text](https://github.com/nyukat/GMIC/blob/master/sample_data/sample_visualization.png)
 
 
 
@@ -133,17 +135,16 @@ If you found this code useful, please cite our paper:
 **TODO**\
 
 
-**Globally-Aware Multiple Instance Classifier for Breast Cancer Screening**
-Shen, Yiqiu; Wu, Nan; Phang, Jason; Park, Jungkyu; Kim, Gene; Moy, Linda; Cho, Kyunghyun; Geras, Krzysztof J.
+Reference to the preliminary version of our paper:
+**Globally-Aware Multiple Instance Classifier for Breast Cancer Screening**\
+Shen, Yiqiu; Wu, Nan; Phang, Jason; Park, Jungkyu; Kim, Gene; Moy, Linda; Cho, Kyunghyun; Geras, Krzysztof J.\
 
-Machine Learning in Medical Imaging - 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Proceedings. Springer , 2019. p. 18-26 (Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics); Vol. 11861 LNCS).
-
-@inproceedings{shen2019globally,
-  title={Globally-Aware Multiple Instance Classifier for Breast Cancer Screening},
-  author={Shen, Yiqiu and Wu, Nan and Phang, Jason and Park, Jungkyu and Kim, Gene and Moy, Linda and Cho, Kyunghyun and Geras, Krzysztof J},
-  booktitle={Machine Learning in Medical Imaging: 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Shenzhen, China, October 13, 2019, Proceedings},
-  volume={11861},
-  pages={18-26},
-  year={2019},
-  organization={Springer Nature}
-}
+Machine Learning in Medical Imaging - 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Proceedings. Springer , 2019. p. 18-26 (Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics); Vol. 11861 LNCS).\
+    
+    @inproceedings{shen2019globally, title={Globally-Aware Multiple Instance Classifier for Breast Cancer Screening},\
+        author={Shen, Yiqiu and Wu, Nan and Phang, Jason and Park, Jungkyu and Kim, Gene and Moy, Linda and Cho, Kyunghyun and Geras, Krzysztof J},\
+        booktitle={Machine Learning in Medical Imaging: 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Shenzhen, China, October 13, 2019, Proceedings},\
+        volume={11861},\
+        pages={18-26},\
+        year={2019},\
+        organization={Springer Nature}}
