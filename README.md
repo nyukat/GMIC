@@ -72,22 +72,22 @@ You should obtain the following outputs for the sample exams provided in the rep
 
 image_index  |  benign_pred  |  malignant_pred  |  benign_label  |  malignant_label
 -------------|---------------|------------------|----------------|-----------------
-0_L-CC       |  0.0772       |  0.0051          |  0             |  0
-0_R-CC       |  0.6104       |  0.0774          |  1             |  0
-0_L-MLO      |  0.1629       |  0.1098          |  0             |  0
-0_R-MLO      |  0.6559       |  0.0744          |  1             |  0
-1_L-CC       |  0.0083       |  0.0010          |  0             |  0
-1_R-CC       |  0.1682       |  0.8866          |  0             |  1
-1_L-MLO      |  0.0160       |  0.0082          |  0             |  0
-1_R-MLO      |  0.1843       |  0.3429          |  0             |  1
-2_L-CC       |  0.0298       |  0.0186          |  0             |  0
-2_R-CC       |  0.3353       |  0.0575          |  1             |  0
-2_L-MLO      |  0.1075       |  0.0224          |  0             |  0
-2_R-MLO      |  0.5951       |  0.0215          |  1             |  0
-3_L-CC       |  0.2804       |  0.5027          |  0             |  1
-3_R-CC       |  0.0931       |  0.0391          |  0             |  0
-3_L-MLO      |  0.2546       |  0.5304          |  0             |  1
-3_R-MLO      |  0.0555       |  0.0614          |  0             |  0
+0_L-CC       |  0.1356       |  0.0081          |  0             |  0
+0_R-CC       |  0.8929       |  0.3259          |  1             |  0
+0_L-MLO      |  0.2368       |  0.0335          |  0             |  0
+0_R-MLO      |  0.9509       |  0.1812          |  1             |  0
+1_L-CC       |  0.0546       |  0.0168          |  0             |  0
+1_R-CC       |  0.5986       |  0.9910          |  0             |  1
+1_L-MLO      |  0.0414       |  0.0139          |  0             |  0
+1_R-MLO      |  0.5383       |  0.9308          |  0             |  1
+2_L-CC       |  0.0678       |  0.0227          |  0             |  0
+2_R-CC       |  0.1917       |  0.0603          |  1             |  0
+2_L-MLO      |  0.1210       |  0.0093          |  0             |  0
+2_R-MLO      |  0.2440       |  0.0231          |  1             |  0
+3_L-CC       |  0.6295       |  0.9326          |  0             |  1
+3_R-CC       |  0.2291       |  0.1603          |  0             |  0
+3_L-MLO      |  0.6304       |  0.7496          |  0             |  1
+3_R-MLO      |  0.0622       |  0.0507          |  0             |  0
 
 
 ## Data
@@ -135,7 +135,8 @@ If you found this code useful, please cite our paper:
 **TODO**\
 
 
-Reference to the preliminary version of our paper:
+Reference to previous GMIC version:
+
 **Globally-Aware Multiple Instance Classifier for Breast Cancer Screening**\
 Shen, Yiqiu; Wu, Nan; Phang, Jason; Park, Jungkyu; Kim, Gene; Moy, Linda; Cho, Kyunghyun; Geras, Krzysztof J.\
 
