@@ -66,6 +66,7 @@ The following variables defined in `run.sh` can be modified as needed:
 * `OUTPUT_PATH`: The path where visualization files and predicitons will be saved.
 * `DEVICE_TYPE`: Device type to use in heatmap generation and classifiers, either 'cpu' or 'gpu'.
 * `GPU_NUMBER`: Specify which one of the GPUs to use when multiple GPUs are available.
+* `visualization-flag`: Whether to generate vislauzation
 
 
 You should obtain the following outputs for the sample exams provided in the repository (found in `sample_output/predictions.csv` by default). 
