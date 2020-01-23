@@ -1,11 +1,7 @@
-# TODO:New Title
+# Interpretable classifier for high-resolution breast cancer screening images learning only with image-level labels
 
 ## TODO: 
-- new title
-- change license informaiton in each file
 - add reference to our new paper
-- update prediction example
-
 
 ## Introduction
 This is an implementation of the Globally-Aware Multiple Instance Classifier (GMIC) model as described in our paper [TODO](https://todo). The architecture of the proposed model is shown below.
