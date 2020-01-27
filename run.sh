@@ -1,9 +1,9 @@
 #!/bin/bash
 
 NUM_PROCESSES=10
-DEVICE_TYPE='gpu'
-GPU_NUMBER=7
-MODEL_INDEX='ensemble'
+DEVICE_TYPE='cpu'
+GPU_NUMBER=0
+MODEL_INDEX='1'
 
 MODEL_PATH='models/'
 CROPPED_IMAGE_PATH='sample_data/cropped_images'
@@ -22,5 +22,5 @@ python3 src/scripts/run_model.py \
     --device-type $DEVICE_TYPE \
     --gpu-number $GPU_NUMBER \
     --model-index $MODEL_INDEX \
-    --visualization-flag
+    #--visualization-flag
 
