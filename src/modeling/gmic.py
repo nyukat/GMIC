@@ -56,7 +56,7 @@ class GMIC(nn.Module):
         self.attention_module.add_layers()
 
         # fusion branch
-        self.fusion_network = nn.Linear(768, 2)
+        self.fusion_dnn = nn.Linear(768, 2)
 
     def _convert_crop_position(self, crops_x_small, cam_size, x_original):
         """
@@ -143,6 +143,6 @@ class GMIC(nn.Module):
         g1, _ = torch.max(h_g, dim=2)
         global_vec, _ = torch.max(g1, dim=2)
         concat_vec = torch.cat([global_vec, z], dim=1)
-        self.y_fusion = torch.sigmoid(self.fusion_network(concat_vec))
+        self.y_fusion = torch.sigmoid(self.fusion_dnn(concat_vec))
 
         return self.y_fusion

@@ -299,14 +299,14 @@ class TopTPercentAggregationFunction(AbstractMILUnit):
     """
     def __init__(self, parameters, parent_module):
         super(TopTPercentAggregationFunction, self).__init__(parameters, parent_module)
-        self.percent_k = parameters["percent_t"]
+        self.percent_t = parameters["percent_t"]
         self.parent_module = parent_module
 
     def forward(self, cam):
         batch_size, num_class, W, H = cam.size()
         cam_flatten = cam.view(batch_size, num_class, -1)
-        top_k = int(round(W*H*self.percent_k))
-        selected_area = cam_flatten.topk(top_k, dim=2)[0]
+        top_t = int(round(W*H*self.percent_t))
+        selected_area = cam_flatten.topk(top_t, dim=2)[0]
         return selected_area.mean(dim=2)
 
 

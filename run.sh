@@ -1,10 +1,11 @@
 #!/bin/bash
 
 NUM_PROCESSES=10
-DEVICE_TYPE='cpu'
-GPU_NUMBER=0
+DEVICE_TYPE='gpu'
+GPU_NUMBER=7
+MODEL_INDEX='ensemble'
 
-MODEL_PATH='models/sample_model.p'
+MODEL_PATH='models/'
 CROPPED_IMAGE_PATH='sample_data/cropped_images'
 SEG_PATH='sample_data/segmentation'
 EXAM_LIST_PATH='sample_data/data.pkl'
@@ -20,5 +21,6 @@ python3 src/scripts/run_model.py \
     --output-path $OUTPUT_PATH \
     --device-type $DEVICE_TYPE \
     --gpu-number $GPU_NUMBER \
+    --model-index $MODEL_INDEX \
     --visualization-flag
 

@@ -55,7 +55,7 @@ import matplotlib.cm as cm
 from src.utilities import pickling, tools
 from src.modeling import gmic as gmic
 from src.data_loading import loading
-from src.constants import VIEWS
+from src.constants import VIEWS, PERCENT_T_DICT
 
 
 def visualize_example(input_img, saliency_maps, true_segs,
@@ -223,9 +223,9 @@ def run_model(model, exam_list, parameters, turn_on_visualization):
     return pd.DataFrame(pred_dict)
 
 
-def load_run_save(model_path, data_path, output_path, parameters, turn_on_visualization):
+def run_single_model(model_path, data_path, parameters, turn_on_visualization):
     """
-    Load the model, run on sample data, and save the predictions as csv file
+    Load a single model and run on sample data
     """
     # construct model
     model = gmic.GMIC(parameters)
@@ -236,13 +236,47 @@ def load_run_save(model_path, data_path, output_path, parameters, turn_on_visual
         model.load_state_dict(torch.load(model_path, map_location="cpu"), strict=False)
     # load metadata
     exam_list = pickling.unpickle_from_file(data_path)
-    # create output paths
-    os.makedirs(output_path, exist_ok=True)
-    os.makedirs(os.path.join(output_path, "visualization"), exist_ok=True)
     # run the model on the dataset
     output_df = run_model(model, exam_list, parameters, turn_on_visualization)
+    return output_df
+
+
+def start_experiment(model_path, data_path, output_path, model_index, parameters, turn_on_visualization):
+    """
+    Run the model on sample data and save the predictions as a csv file
+    """
+    # make sure model_index is valid
+    valid_model_index = ["1", "2", "3", "4", "5", "ensemble"]
+    assert model_index in valid_model_index, "Invalid model_index {0}. Valid options: {1}".format(model_index, valid_model_index)
+    # create directories
+    os.makedirs(output_path, exist_ok=True)
+    os.makedirs(os.path.join(output_path, "visualization"), exist_ok=True)
+    # do the average ensemble over predictions
+    if model_index == "ensemble":
+        output_df_list = []
+        for i in range(1,6):
+            single_model_path = os.path.join(model_path, "sample_model_{0}.p".format(i))
+            # set percent_t for the model
+            parameters["percent_t"] = PERCENT_T_DICT[str(i)]
+            # only do visualization for the first model
+            need_visualization = i==1 and turn_on_visualization
+            current_model_output = run_single_model(single_model_path, data_path, parameters, need_visualization)
+            output_df_list.append(current_model_output)
+        all_prediction_df = pd.concat(output_df_list)
+        output_df = all_prediction_df.groupby("image_index").apply(lambda rows: pd.Series({"benign_pred":np.nanmean(rows["benign_pred"]),
+                      "malignant_pred": np.nanmean(rows["malignant_pred"]),
+                      "benign_label": rows.iloc[0]["benign_label"],
+                      "malignant_label": rows.iloc[0]["malignant_label"],
+                      })).reset_index()
+    else:
+        # set percent_t for the model
+        parameters["percent_t"] = PERCENT_T_DICT[model_index]
+        single_model_path = os.path.join(model_path, "sample_model_{0}.p".format(model_index))
+        output_df = run_single_model(single_model_path, data_path, parameters, turn_on_visualization)
+
     # save the predictions
     output_df.to_csv(os.path.join(output_path, "predictions.csv"), index=False, float_format='%.4f')
+
 
 
 def main():
@@ -255,6 +289,7 @@ def main():
     parser.add_argument('--output-path', required=True)
     parser.add_argument('--device-type', default="cpu", choices=['gpu', 'cpu'])
     parser.add_argument("--gpu-number", type=int, default=0)
+    parser.add_argument("--model-index", type=str, default="1")
     parser.add_argument("--visualization-flag", action="store_true", default=False)
     args = parser.parse_args()
 
@@ -268,14 +303,14 @@ def main():
         "output_path": args.output_path,
         # model related hyper-parameters
         "cam_size": (46, 30),
-        "percent_t": 0.02,
         "K": 6,
         "crop_shape": (256, 256),
     }
-    load_run_save(
+    start_experiment(
         model_path=args.model_path,
         data_path=args.data_path,
         output_path=args.output_path,
+        model_index=args.model_index,
         parameters=parameters,
         turn_on_visualization=args.visualization_flag,
     )
