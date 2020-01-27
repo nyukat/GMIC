@@ -303,7 +303,7 @@ class TopTPercentAggregationFunction(AbstractMILUnit):
         self.parent_module = parent_module
 
     def forward(self, cam):
-        batch_size, num_class, W, H = cam.size()
+        batch_size, num_class, H, W = cam.size()
         cam_flatten = cam.view(batch_size, num_class, -1)
         top_t = int(round(W*H*self.percent_t))
         selected_area = cam_flatten.topk(top_t, dim=2)[0]

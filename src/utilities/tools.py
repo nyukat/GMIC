@@ -72,25 +72,25 @@ def crop(original_img, crop_shape, crop_position, method="center",
 
     # locate the four corners
     if method == "center":
-        left_x = int(np.round(crop_x - x_delta / 2))
-        right_x = int(np.round(crop_x + x_delta / 2))
-        lower_y = int(np.round(crop_y - y_delta / 2))
-        upper_y = int(np.round(crop_y + y_delta/2))
+        min_x = int(np.round(crop_x - x_delta / 2))
+        max_x = int(np.round(crop_x + x_delta / 2))
+        min_y = int(np.round(crop_y - y_delta / 2))
+        max_y = int(np.round(crop_y + y_delta/2))
     elif method == "upper_left":
-        left_x = int(np.round(crop_x))
-        right_x = int(np.round(crop_x + x_delta))
-        lower_y = int(np.round(crop_y))
-        upper_y = int(np.round(crop_y + y_delta))
+        min_x = int(np.round(crop_x))
+        max_x = int(np.round(crop_x + x_delta))
+        min_y = int(np.round(crop_y))
+        max_y = int(np.round(crop_y + y_delta))
 
     # make sure that the crops are in range
-    left_x = make_sure_in_range(left_x, 0, I)
-    right_x = make_sure_in_range(right_x, 0, I)
-    lower_y = make_sure_in_range(lower_y, 0, J)
-    upper_y = make_sure_in_range(upper_y, 0, J)
+    min_x = make_sure_in_range(min_x, 0, I)
+    max_x = make_sure_in_range(max_x, 0, I)
+    min_y = make_sure_in_range(min_y, 0, J)
+    max_y = make_sure_in_range(max_y, 0, J)
 
     # if in_place, flag the original inputs
     if in_place:
-        original_img[left_x:right_x, lower_y:upper_y] = 1.0
+        original_img[min_x:max_x, min_y:max_y] = 1.0
     # else make the new matrix
     else:
         # somehow background is normalized to this number
@@ -98,11 +98,11 @@ def crop(original_img, crop_shape, crop_position, method="center",
             output = np.ones(crop_shape) * np.min(original_img)
         else:
             output = np.ones(crop_shape) * background_val
-        real_x_delta = right_x - left_x
-        real_y_delta = upper_y - lower_y
+        real_x_delta = max_x - min_x
+        real_y_delta = max_y - min_y
         origin_x = crop_shape[0] - real_x_delta
         origin_y = crop_shape[1] - real_y_delta
-        output[origin_x:, origin_y:] = original_img[left_x:right_x, lower_y:upper_y]
+        output[origin_x:, origin_y:] = original_img[min_x:max_x, min_y:max_y]
         return output
 
 
@@ -142,32 +142,32 @@ def crop_pytorch(original_img_pytorch, crop_shape, crop_position, out,
 
     # locate the four corners
     if method == "center":
-        left_x = int(np.round(crop_x - x_delta / 2))
-        right_x = int(np.round(crop_x + x_delta / 2))
-        lower_y = int(np.round(crop_y - y_delta / 2))
-        upper_y = int(np.round(crop_y + y_delta / 2))
+        min_x = int(np.round(crop_x - x_delta / 2))
+        max_x = int(np.round(crop_x + x_delta / 2))
+        min_y = int(np.round(crop_y - y_delta / 2))
+        max_y = int(np.round(crop_y + y_delta / 2))
     elif method == "upper_left":
-        left_x = int(np.round(crop_x))
-        right_x = int(np.round(crop_x + x_delta))
-        lower_y = int(np.round(crop_y))
-        upper_y = int(np.round(crop_y + y_delta))
+        min_x = int(np.round(crop_x))
+        max_x = int(np.round(crop_x + x_delta))
+        min_y = int(np.round(crop_y))
+        max_y = int(np.round(crop_y + y_delta))
 
     # make sure that the crops are in range
-    left_x = make_sure_in_range(left_x, 0, H)
-    right_x = make_sure_in_range(right_x, 0, H)
-    lower_y = make_sure_in_range(lower_y, 0, W)
-    upper_y = make_sure_in_range(upper_y, 0, W)
+    min_x = make_sure_in_range(min_x, 0, H)
+    max_x = make_sure_in_range(max_x, 0, H)
+    min_y = make_sure_in_range(min_y, 0, W)
+    max_y = make_sure_in_range(max_y, 0, W)
 
     # somehow background is normalized to this number
     if background_val == "min":
         out[:, :] = original_img_pytorch.min()
     else:
         out[:, :] = background_val
-    real_x_delta = right_x - left_x
-    real_y_delta = upper_y - lower_y
+    real_x_delta = max_x - min_x
+    real_y_delta = max_y - min_y
     origin_x = crop_shape[0] - real_x_delta
     origin_y = crop_shape[1] - real_y_delta
-    out[origin_x:, origin_y:] = original_img_pytorch[left_x:right_x, lower_y:upper_y]
+    out[origin_x:, origin_y:] = original_img_pytorch[min_x:max_x, min_y:max_y]
 
 
 def get_max_window(input_image, window_shape, pooling_logic="avg"):
