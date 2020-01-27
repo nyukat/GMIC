@@ -15,7 +15,7 @@ Highlights of GMIC:
 - **High Efficiency**: Compared to ResNet-34, GMIC has **28.8%** fewer parameters, uses **78.43%** less GPU memory, is **4.1x** faster during inference and **5.6x** faster during training.
 - **Weakly Supervised Lesion Localization**: Despite being trained with only image-level labels indicating the presene of any benign or malignant lesion, GMIC is able to generate pixel-level saliency maps (shown below) that provide additional interpretability. 
 
-The implementation allows users to get breast cancer predictions and visualization of saliency maps by applying one of our pretrained models. This model is implemented in PyTorch. 
+The implementation allows users to get breast cancer predictions and visualization of saliency maps by applying one of our pretrained models. We provide weights for 5 GMIC-ResNet-18 models. This model is implemented in PyTorch. 
 
 * Input: A mammography image that is cropped to 2944 x 1920 and are saved as 16-bit png file. As a part of this repository, we provide 4 sample exams (in `sample_data/cropped_images` directory and exam list stored in `sample_data/data.pkl`) each of which includes 2 CC view mammography images and 2 MLO view mammography images.
 
@@ -42,6 +42,8 @@ The implementation allows users to get breast cancer predictions and visualizati
 * pandas (0.22.0)
 * opencv-python (3.4.2)
 * tqdm (4.19.8)
+* matplotlib (3.0.2)
+* git-lfs (2.10.0)
 
 
 ## License
@@ -50,7 +52,7 @@ This repository is licensed under the terms of the GNU AGPLv3 license.
 
 ## How to run the code
 
-`run.sh` will automatically run the entire pipeline and save the prediction results in csv. Note that you need to first cd to the project directory and then '. ./run.sh'. If running the individual Python scripts, please include the path to this repository in your `PYTHONPATH`. 
+You need to first install conda in your environment. Before running the code, please run `install.sh` first. Once you have installed all the dependencies, `run.sh` will automatically run the entire pipeline and save the prediction results in csv. Note that you need to first cd to the project directory and then '. ./run.sh'. If running the individual Python scripts, please include the path to this repository in your `PYTHONPATH`. 
 
 We recommend running the code with a gpu. To run the code with cpu only, please change `DEVICE_TYPE` in run.sh to 'cpu'. 
 
@@ -62,7 +64,8 @@ The following variables defined in `run.sh` can be modified as needed:
 * `OUTPUT_PATH`: The path where visualization files and predicitons will be saved.
 * `DEVICE_TYPE`: Device type to use in heatmap generation and classifiers, either 'cpu' or 'gpu'.
 * `GPU_NUMBER`: Specify which one of the GPUs to use when multiple GPUs are available.
-* `visualization-flag`: Whether to generate vislauzation
+* `MODEL_INDEX`: Specify which one of the five models to use. Valid values include {'1', '2', '3', '4', '5','ensemble'}.
+* `visualization-flag`: Whether to generate vislauzation.
 
 
 You should obtain the following outputs for the sample exams provided in the repository (found in `sample_output/predictions.csv` by default). 
@@ -136,13 +139,12 @@ Reference to previous GMIC version:
 
 **Globally-Aware Multiple Instance Classifier for Breast Cancer Screening**\
 Shen, Yiqiu; Wu, Nan; Phang, Jason; Park, Jungkyu; Kim, Gene; Moy, Linda; Cho, Kyunghyun; Geras, Krzysztof J.\
-
-Machine Learning in Medical Imaging - 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Proceedings. Springer , 2019. p. 18-26 (Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics); Vol. 11861 LNCS).\
+Machine Learning in Medical Imaging - 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Proceedings. Springer , 2019. p. 18-26 (Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics); Vol. 11861 LNCS).
     
-    @inproceedings{shen2019globally, title={Globally-Aware Multiple Instance Classifier for Breast Cancer Screening},\
-        author={Shen, Yiqiu and Wu, Nan and Phang, Jason and Park, Jungkyu and Kim, Gene and Moy, Linda and Cho, Kyunghyun and Geras, Krzysztof J},\
-        booktitle={Machine Learning in Medical Imaging: 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Shenzhen, China, October 13, 2019, Proceedings},\
-        volume={11861},\
-        pages={18-26},\
-        year={2019},\
+    @inproceedings{shen2019globally, title={Globally-Aware Multiple Instance Classifier for Breast Cancer Screening},
+        author={Shen, Yiqiu and Wu, Nan and Phang, Jason and Park, Jungkyu and Kim, Gene and Moy, Linda and Cho, Kyunghyun and Geras, Krzysztof J},
+        booktitle={Machine Learning in Medical Imaging: 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Shenzhen, China, October 13, 2019, Proceedings},
+        volume={11861},
+        pages={18-26},
+        year={2019},
         organization={Springer Nature}}
