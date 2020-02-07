@@ -12,15 +12,15 @@ This is an implementation of the Globally-Aware Multiple Instance Classifier (GM
 </p>
 
 Highlights of GMIC:
-- **High Accuracy**: GMIC outperformed ResNet-34 and Faster R-CNN
-- **High Efficiency**: Compared to ResNet-34, GMIC has **28.8%** fewer parameters, uses **78.43%** less GPU memory, is **4.1x** faster during inference and **5.6x** faster during training.
-- **Weakly Supervised Lesion Localization**: Despite being trained with only image-level labels indicating the presene of any benign or malignant lesion, GMIC is able to generate pixel-level saliency maps (shown below) that provide additional interpretability. 
+- **High Accuracy**: GMIC outperformed ResNet-34 and Faster R-CNN.
+- **High Efficiency**: Compared to ResNet-34, GMIC has **28.8%** fewer parameters, uses **78.43%** less GPU memory and is **4.1x** faster during inference and **5.6x** faster during training.
+- **Weakly Supervised Lesion Localization**: Despite being trained with only image-level labels indicating the presence of any benign or malignant lesion, GMIC is able to generate pixel-level saliency maps (shown below) that provide additional interpretability.
 
-The implementation allows users to get breast cancer predictions and visualization of saliency maps by applying one of our pretrained models. We provide weights for 5 GMIC-ResNet-18 models. This model is implemented in PyTorch. 
+The implementation allows users to obtain breast cancer predictions and visualization of saliency maps by applying one of our pretrained models. We provide weights for 5 GMIC-ResNet-18 models. The model is implemented in PyTorch. 
 
-* Input: A mammography image that is cropped to 2944 x 1920 and are saved as 16-bit png file. As a part of this repository, we provide 4 sample exams (in `sample_data/cropped_images` directory and exam list stored in `sample_data/data.pkl`) each of which includes 2 CC view mammography images and 2 MLO view mammography images.
+* Input: A mammography image that is cropped to 2944 x 1920 and are saved as 16-bit png files. As a part of this repository, we provide 4 sample exams (in `sample_data/cropped_images` directory and exam list stored in `sample_data/data.pkl`), each of which includes 2 CC view images and 2 MLO view images.
 
-* Output: The GMIC model generates one prediction for each image: probability of benign and malignant findings. All predictions are saved into a csv file `$OUTPUT_PATH/predictions.csv` that contains the following columns: image_index, benign_pred, malignant_pred, benign_label, malignant_label. In addition, each input image is assoicated with a visualization file saved under `$OUTPUT_PATH/visualization`. An examplar visualization file is illustrated above. The 10 columns (from left to right) represents:
+* Output: The GMIC model generates one prediction for each image: probability of benign and malignant findings. All predictions are saved into a csv file `$OUTPUT_PATH/predictions.csv` that contains the following columns: image_index, benign_pred, malignant_pred, benign_label, malignant_label. In addition, each input image is associated with a visualization file saved under `$OUTPUT_PATH/visualization`. An exemplar visualization file is illustrated above. The 10 columns (from left to right) represents:
   * input mammography with ground truth annotation (green=benign, red=malignant)
   * patch map that illustrates the locations of ROI proposal patches (blue squares)
   * saliency map for benign class
@@ -62,11 +62,11 @@ The following variables defined in `run.sh` can be modified as needed:
 * `CROPPED_IMAGE_PATH`: The directory where cropped mammograms are saved.
 * `SEG_PATH`: The directory where ground truth segmenations are saved.
 * `EXAM_LIST_PATH`: The path where the exam list is stored.
-* `OUTPUT_PATH`: The path where visualization files and predicitons will be saved.
+* `OUTPUT_PATH`: The path where visualization files and predictions will be saved.
 * `DEVICE_TYPE`: Device type to use in heatmap generation and classifiers, either 'cpu' or 'gpu'.
 * `GPU_NUMBER`: Specify which one of the GPUs to use when multiple GPUs are available.
 * `MODEL_INDEX`: Specify which one of the five models to use. Valid values include {'1', '2', '3', '4', '5','ensemble'}.
-* `visualization-flag`: Whether to generate vislauzation.
+* `visualization-flag`: Whether to generate visualization.
 
 
 You should obtain the following outputs for the sample exams provided in the repository (found in `sample_output/predictions.csv` by default). 
@@ -125,7 +125,7 @@ image_index  |  benign_pred  |  malignant_pred  |  benign_label  |  malignant_la
   'R-CC_benign_seg': ['0_R-CC_benign'],
   'R-CC_malignant_seg': ['0_R-CC_malignant']}
 ```
-In their original formats, images from `L-CC` and `L-MLO` views face right direction, and images from `R-CC` and `R-MLO` views faces left direction. We horizontally flipped `R-CC` and `R-MLO` images so that all four views face right direction. Values for `L-CC`, `R-CC`, `L-MLO`, and `R-MLO` are list of image filenames without extension and directory name. 
+In their original formats, images from `L-CC` and `L-MLO` views face right direction, and images from `R-CC` and `R-MLO` views faces left direction. We horizontally flipped `R-CC` and `R-MLO` images so that all four views face right. Values for `L-CC`, `R-CC`, `L-MLO`, and `R-MLO` are list of image filenames without extensions and directory name. 
 
 
 
