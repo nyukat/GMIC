@@ -259,7 +259,7 @@ def start_experiment(model_path, data_path, output_path, model_index, parameters
 
 def main():
     # retrieve command line arguments
-    parser = argparse.ArgumentParser(description='Run image-only model or image+heatmap model')
+    parser = argparse.ArgumentParser(description='Run GMIC on the sample data')
     parser.add_argument('--model-path', required=True)
     parser.add_argument('--data-path', required=True)
     parser.add_argument('--image-path', required=True)
