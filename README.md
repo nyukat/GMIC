@@ -131,7 +131,7 @@ If you found this code useful, please cite our paper:
 
 **An interpretable classifier for high-resolution breast cancer screening images utilizing weakly supervised localization**\
 Shen, Yiqiu; Wu, Nan; Phang, Jason; Park, Jungkyu; Liu, Kangning; Tyagi, Sudarshini; Heacock, Laura; Kim, Gene; Moy, Linda; Cho, Kyunghyun; Geras, Krzysztof J.\
-Machine Learning in Medical Imaging - 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Proceedings. Springer , 2019. p. 18-26 (Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics); Vol. 11861 LNCS).
+arXiv:2002.07613, 2020.
     
     @article{shen2020an, 
     title={An interpretable classifier for high-resolution breast cancer screening images utilizing weakly supervised localization},
