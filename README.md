@@ -1,11 +1,7 @@
-# Interpretable classifier for high-resolution breast cancer screening images learning only with image-level labels
-
-## TODO: 
-- title will be changed
-- add reference to our new paper
+# An interpretable classifier for high-resolution breast cancer screening images utilizing weakly supervised localization
 
 ## Introduction
-This is an implementation of the Globally-Aware Multiple Instance Classifier (GMIC) model as described in our paper [TODO](https://todo). The architecture of the proposed model is shown below.
+This is an implementation of the Globally-Aware Multiple Instance Classifier (GMIC) model as described in [our paper](https://arxiv.org/abs/2002.07613). The architecture of the proposed model is shown below.
 
 <p align="center">
   <img width="793" height="729" src="https://github.com/nyukat/GMIC/blob/master/mia_structure.png">
@@ -133,7 +129,15 @@ In their original formats, images from `L-CC` and `L-MLO` views face right, and 
 
 If you found this code useful, please cite our paper:
 
-**TODO**\
+**An interpretable classifier for high-resolution breast cancer screening images utilizing weakly supervised localization**\
+Shen, Yiqiu; Wu, Nan; Phang, Jason; Park, Jungkyu; Liu, Kangning; Tyagi, Sudarshini; Heacock, Laura; Kim, Gene; Moy, Linda; Cho, Kyunghyun; Geras, Krzysztof J.\
+Machine Learning in Medical Imaging - 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Proceedings. Springer , 2019. p. 18-26 (Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics); Vol. 11861 LNCS).
+    
+    @article{shen2020an, 
+    title={An interpretable classifier for high-resolution breast cancer screening images utilizing weakly supervised localization},
+        author={Shen, Yiqiu and Wu, Nan and Phang, Jason and Park, Jungkyu and Liu, Kangning and Tyagi, Sudarshini and Heacock, Laura and Kim, Gene and Moy, Linda and Cho, Kyunghyun and Geras, Krzysztof J},
+        journal={arXiv:2002.07613},
+        year={2020}}
 
 
 Reference to previous GMIC version:
