@@ -130,7 +130,7 @@ In their original formats, images from `L-CC` and `L-MLO` views face right, and 
 If you found this code useful, please cite our paper:
 
 **An interpretable classifier for high-resolution breast cancer screening images utilizing weakly supervised localization**\
-Shen, Yiqiu; Wu, Nan; Phang, Jason; Park, Jungkyu; Liu, Kangning; Tyagi, Sudarshini; Heacock, Laura; Kim, Gene; Moy, Linda; Cho, Kyunghyun; Geras, Krzysztof J.\
+Yiqiu Shen, Nan Wu, Jason Phang, Jungkyu Park, Kangning Liu, Sudarshini Tyagi, Laura Heacock, S. Gene Kim, Linda Moy, Kyunghyun Cho and Krzysztof J. Geras\
 arXiv:2002.07613, 2020.
     
     @article{shen2020an, 
@@ -143,7 +143,7 @@ arXiv:2002.07613, 2020.
 Reference to previous GMIC version:
 
 **Globally-Aware Multiple Instance Classifier for Breast Cancer Screening**\
-Shen, Yiqiu; Wu, Nan; Phang, Jason; Park, Jungkyu; Kim, Gene; Moy, Linda; Cho, Kyunghyun; Geras, Krzysztof J.\
+Yiqiu Shen, Nan Wu, Jason Phang, Jungkyu Park, S. Gene Kim, Linda Moy, Kyunghyun Cho and Krzysztof J. Geras\
 Machine Learning in Medical Imaging - 10th International Workshop, MLMI 2019, Held in Conjunction with MICCAI 2019, Proceedings. Springer , 2019. p. 18-26 (Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics); Vol. 11861 LNCS).
     
     @inproceedings{shen2019globally, 
