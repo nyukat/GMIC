@@ -20,6 +20,7 @@
 import numpy as np
 from src.constants import VIEWS
 import imageio
+import src.data_loading.augmentations as augmentations
 
 
 def flip_image(image, view, horizontal_flip):
@@ -61,6 +62,27 @@ def load_image(image_path, view, horizontal_flip):
     image = image.astype(np.float32)
     image = flip_image(image, view, horizontal_flip)
     return image
+
+
+def process_image(image, view, best_center):
+    """
+    Applies augmentation window with random noise in location and size
+    and return normalized cropped image.
+    """
+    cropped_image, _ = augmentations.random_augmentation_best_center(
+        image=image,
+        input_size=(2944, 1920),
+        random_number_generator=np.random.RandomState(0),
+        best_center=best_center,
+        view=view
+    )
+
+    # For test time only, normalize a copy of the cropped image
+    # in order to avoid changing the value of original image which gets augmented multiple times
+    cropped_image = cropped_image.copy()
+    standard_normalize_single_image(cropped_image)
+
+    return cropped_image
 
 
 

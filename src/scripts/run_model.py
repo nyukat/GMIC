@@ -154,7 +154,7 @@ def run_model(model, exam_list, parameters, turn_on_visualization):
                     view=view,
                     horizontal_flip=False,
                 )
-                loading.standard_normalize_single_image(loaded_image)
+                loaded_image = loading.process_image(loaded_image, view, datum["best_center"][view][0])
                 # load segmentation if available
                 benign_seg_path = os.path.join(parameters["segmentation_path"], "{0}_{1}".format(short_file_path, "benign.png"))
                 malignant_seg_path = os.path.join(parameters["segmentation_path"], "{0}_{1}".format(short_file_path, "malignant.png"))
