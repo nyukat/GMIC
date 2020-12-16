@@ -152,7 +152,7 @@ def run_model(model, exam_list, parameters, turn_on_visualization):
                 loaded_image = loading.load_image(
                     image_path=os.path.join(parameters["image_path"], short_file_path + ".png"),
                     view=view,
-                    horizontal_flip=False,
+                    horizontal_flip=datum["horizontal_flip"],
                 )
                 loaded_image = loading.process_image(loaded_image, view, datum["best_center"][view][0])
                 # load segmentation if available
