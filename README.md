@@ -26,6 +26,8 @@ The implementation allows users to obtain breast cancer predictions and visualiz
 ![alt text](https://github.com/nyukat/GMIC/blob/master/sample_data/sample_visualization.png)
 
 
+**Update (2020/12/15)**: Added the preprocessing pipeline.
+
 
 ## Prerequisites
 
@@ -92,7 +94,7 @@ image_index  |  benign_pred  |  malignant_pred  |  benign_label  |  malignant_la
 
 `sample_data/segmentation` contains the binary pixel-level segmentation labels for some exams. All segmentations are saved as png images.
 
-`sample_data/data.pkl` contains a list of exam information. Each exam is represented as a dictionary with the following format:
+`sample_data/exam_list_before_cropping.pkl` contains a list of exam information. Each exam is represented as a dictionary with the following format:
 
 ```python
 {'horizontal_flip': 'NO',
@@ -122,6 +124,36 @@ image_index  |  benign_pred  |  malignant_pred  |  benign_label  |  malignant_la
 ```
 In their original formats, images from `L-CC` and `L-MLO` views face right, and images from `R-CC` and `R-MLO` views face left. We horizontally flipped `R-CC` and `R-MLO` images so that all four views face right. Values for `L-CC`, `R-CC`, `L-MLO`, and `R-MLO` are list of image filenames without extensions and directory name. 
 
+### Preprocessing
+
+Run the following commands to crop mammograms and calculate information about augmentation windows.
+
+#### Crop mammograms
+```bash
+python3 src/cropping/crop_mammogram.py \
+    --input-data-folder $DATA_FOLDER \
+    --output-data-folder $CROPPED_IMAGE_PATH \
+    --exam-list-path $INITIAL_EXAM_LIST_PATH  \
+    --cropped-exam-list-path $CROPPED_EXAM_LIST_PATH  \
+    --num-processes $NUM_PROCESSES
+```
+`src/import_data/crop_mammogram.py` crops the mammogram around the breast and discards the background in order to improve image loading time and time to run segmentation algorithm and saves each cropped image to `$PATH_TO_SAVE_CROPPED_IMAGES/short_file_path.png` using h5py. In addition, it adds additional information for each image and creates a new image list to `$CROPPED_IMAGE_LIST_PATH` while discarding images which it fails to crop. Optional --verbose argument prints out information about each image. The additional information includes the following:
+- `window_location`: location of cropping window w.r.t. original dicom image so that segmentation map can be cropped in the same way for training.
+- `rightmost_points`: rightmost nonzero pixels after correctly being flipped.
+- `bottommost_points`: bottommost nonzero pixels after correctly being flipped.
+- `distance_from_starting_side`: records if zero-value gap between the edge of the image and the breast is found in the side where the breast starts to appear and thus should have been no gap. Depending on the dataset, this value can be used to determine wrong value of `horizontal_flip`.
+
+
+#### Calculate optimal centers
+```bash
+python3 src/optimal_centers/get_optimal_centers.py \
+    --cropped-exam-list-path $CROPPED_EXAM_LIST_PATH \
+    --data-prefix $CROPPED_IMAGE_PATH \
+    --output-exam-list-path $EXAM_LIST_PATH \
+    --num-processes $NUM_PROCESSES
+```
+`src/optimal_centers/get_optimal_centers.py` outputs new exam list with additional metadata to `$EXAM_LIST_PATH`. The additional information includes the following:
+- `best_center`: optimal center point of the window for each image. The augmentation windows drawn with `best_center` as exact center point could go outside the boundary of the image. This usually happens when the cropped image is smaller than the window size. In this case, we pad the image and shift the window to be inside the padded image in augmentation. Refer to [the data report](https://cs.nyu.edu/~kgeras/reports/datav1.0.pdf) for more details.
 
 
 ## Reference
