@@ -28,6 +28,8 @@ The implementation allows users to obtain breast cancer predictions and visualiz
 
 **Update (2020/12/15)**: Added the preprocessing pipeline.
 
+**Update (2020/12/16)**: Added the [example notebook](https://github.com/nyukat/GMIC/blob/master/example_notebook.ipynb).
+
 
 ## Prerequisites
 
