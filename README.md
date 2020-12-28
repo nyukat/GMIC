@@ -164,13 +164,17 @@ If you found this code useful, please cite our paper:
 
 **An interpretable classifier for high-resolution breast cancer screening images utilizing weakly supervised localization**\
 Yiqiu Shen, Nan Wu, Jason Phang, Jungkyu Park, Kangning Liu, Sudarshini Tyagi, Laura Heacock, S. Gene Kim, Linda Moy, Kyunghyun Cho and Krzysztof J. Geras\
-arXiv:2002.07613, 2020.
+Medical Image Analysis
+2020
     
-    @article{shen2020an, 
+    @article{shen2020interpretable, 
     title={An interpretable classifier for high-resolution breast cancer screening images utilizing weakly supervised localization},
-        author={Shen, Yiqiu and Wu, Nan and Phang, Jason and Park, Jungkyu and Liu, Kangning and Tyagi, Sudarshini and Heacock, Laura and Kim, Gene and Moy, Linda and Cho, Kyunghyun and Geras, Krzysztof J},
-        journal={arXiv:2002.07613},
-        year={2020}}
+    author={Shen, Yiqiu and Wu, Nan and Phang, Jason and Park, Jungkyu and Liu, Kangning and Tyagi, Sudarshini and Heacock, Laura and Kim, S Gene and Moy, Linda and Cho, Kyunghyun and others},
+    journal={Medical Image Analysis},
+    pages={101908},
+    year={2020},
+    publisher={Elsevier}
+}
 
 
 Reference to previous GMIC version:
