@@ -14,7 +14,7 @@ Highlights of GMIC:
 
 The implementation allows users to obtain breast cancer predictions and visualization of saliency maps by applying one of our pretrained models. We provide weights for 5 GMIC-ResNet-18 models. The model is implemented in PyTorch. 
 
-* Input: A mammography image that is cropped to 2944 x 1920 and are saved as 16-bit png files. As a part of this repository, we provide 4 sample exams (in `sample_data/cropped_images` directory and exam list stored in `sample_data/data.pkl`), each of which includes 2 CC view images and 2 MLO view images.
+* Input: A mammography image that is cropped to 2944 x 1920 and are saved as 16-bit png files. As a part of this repository, we provide 4 sample exams (in `sample_data/images` directory and exam list stored in `sample_data/exam_list_before_cropping.pkl`), each of which includes 2 CC view images and 2 MLO view images. Those exams contain original mammogrphy images and therefore need to be preprocessed (see the Preprocessing section). 
 
 * Output: The GMIC model generates one prediction for each image: probability of benign and malignant findings. All predictions are saved into a csv file `$OUTPUT_PATH/predictions.csv` that contains the following columns: image_index, benign_pred, malignant_pred, benign_label, malignant_label. In addition, each input image is associated with a visualization file saved under `$OUTPUT_PATH/visualization`. An exemplar visualization file is illustrated below. The images (from left to right) represent:
   * input mammography with ground truth annotation (green=benign, red=malignant),
@@ -25,6 +25,7 @@ The implementation allows users to obtain breast cancer predictions and visualiz
   
 ![alt text](https://github.com/nyukat/GMIC/blob/master/sample_data/sample_visualization.png)
 
+**Update (2021/03/08)**: Updated the documentation
 
 **Update (2020/12/15)**: Added the preprocessing pipeline.
 
@@ -92,7 +93,7 @@ image_index  |  benign_pred  |  malignant_pred  |  benign_label  |  malignant_la
 
 ## Data
 
-`sample_data/cropped_images` contains 4 exams each of which includes 4 mammography images (L-CC, L-MLO, R-CC, R-MLO). All mammography images are saved in png format. The original 12-bit mammograms are saved as rescaled 16-bit images to preserve the granularity of the pixel intensities, while still being correctly displayed in image viewers.
+`sample_data/images` contains 4 exams each of which includes 4 the original mammography images (L-CC, L-MLO, R-CC, R-MLO). All mammography images are saved in png format. The original 12-bit mammograms are saved as rescaled 16-bit images to preserve the granularity of the pixel intensities, while still being correctly displayed in image viewers.
 
 `sample_data/segmentation` contains the binary pixel-level segmentation labels for some exams. All segmentations are saved as png images.
 
@@ -156,6 +157,11 @@ python3 src/optimal_centers/get_optimal_centers.py \
 ```
 `src/optimal_centers/get_optimal_centers.py` outputs new exam list with additional metadata to `$EXAM_LIST_PATH`. The additional information includes the following:
 - `best_center`: optimal center point of the window for each image. The augmentation windows drawn with `best_center` as exact center point could go outside the boundary of the image. This usually happens when the cropped image is smaller than the window size. In this case, we pad the image and shift the window to be inside the padded image in augmentation. Refer to [the data report](https://cs.nyu.edu/~kgeras/reports/datav1.0.pdf) for more details.
+
+#### Outcomes of preprocessing
+After the preprocessing step, you should have the following files in the `$OUTPUT_PATH` directory (default is sample_output):
+- cropped_images: a folder that contains the cropped images corresponding to all images in the sample_data/images.
+- data.pkl: the pickle file of a data list that includes the preprocessing metadata for each image and exam.
 
 
 ## Reference
