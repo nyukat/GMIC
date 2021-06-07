@@ -35,7 +35,7 @@ from src.modeling import gmic as gmic
 from src.data_loading import loading
 from src.constants import VIEWS, PERCENT_T_DICT
 
-assert torch.__version__ == '1.1.0', "GMIC not tested for pytorch > 1.1.0 (nor python3.8)"
+#assert torch.__version__ == '1.1.0', "GMIC not tested for pytorch > 1.1.0 (nor python3.8)"
 
 
 def visualize_example(input_img, saliency_maps, true_segs,
@@ -285,6 +285,9 @@ def main():
         "cam_size": (46, 30),
         "K": 6,
         "crop_shape": (256, 256),
+        "post_processing_dim":256,
+        "num_classes":2,
+        "use_v1_global":False,
     }
     start_experiment(
         model_path=args.model_path,

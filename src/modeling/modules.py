@@ -236,6 +236,23 @@ class ResNetV1(nn.Module):
         return x
 
 
+class DownsampleNetworkResNet18V1(ResNetV1):
+    """
+    Downsampling using ResNet V1
+    First conv is 7*7, stride 2, padding 3, cut 1/2 resolution
+    """
+    def __init__(self):
+        super(DownsampleNetworkResNet18V1, self).__init__(
+            initial_filters=64,
+            block=BasicBlockV1,
+            layers=[2, 2, 2, 2],
+            input_channels=3)
+
+    def forward(self, x):
+        last_feature_map = super(DownsampleNetworkResNet18V1, self).forward(x)
+        return last_feature_map
+
+
 class AbstractMILUnit:
     """
     An abstract class that represents an MIL unit module
@@ -252,7 +269,9 @@ class PostProcessingStandard(nn.Module):
     def __init__(self, parameters):
         super(PostProcessingStandard, self).__init__()
         # map all filters to output classes
-        self.gn_conv_last = nn.Conv2d(256, 2, (1, 1), bias=False)
+        self.gn_conv_last = nn.Conv2d(parameters["post_processing_dim"],
+                                      parameters["num_classes"],
+                                      (1, 1), bias=False)
 
     def forward(self, x_out):
         out = self.gn_conv_last(x_out)
@@ -266,17 +285,20 @@ class GlobalNetwork(AbstractMILUnit):
     def __init__(self, parameters, parent_module):
         super(GlobalNetwork, self).__init__(parameters, parent_module)
         # downsampling-branch
-        self.downsampling_branch = ResNetV2(input_channels=1, num_filters=16,
-                 # first conv layer
-                 first_layer_kernel_size=(7,7), first_layer_conv_stride=2,
-                 first_layer_padding=3,
-                 # first pooling layer
-                 first_pool_size=3, first_pool_stride=2, first_pool_padding=0,
-                 # res blocks architecture
-                 blocks_per_layer_list=[2, 2, 2, 2, 2],
-                 block_strides_list=[1, 2, 2, 2, 2],
-                 block_fn=BasicBlockV2,
-                 growth_factor=2)
+        if "use_v1_global" in parameters and parameters["use_v1_global"]:
+            self.downsampling_branch = DownsampleNetworkResNet18V1()
+        else:
+            self.downsampling_branch = ResNetV2(input_channels=1, num_filters=16,
+                     # first conv layer
+                     first_layer_kernel_size=(7,7), first_layer_conv_stride=2,
+                     first_layer_padding=3,
+                     # first pooling layer
+                     first_pool_size=3, first_pool_stride=2, first_pool_padding=0,
+                     # res blocks architecture
+                     blocks_per_layer_list=[2, 2, 2, 2, 2],
+                     block_strides_list=[1, 2, 2, 2, 2],
+                     block_fn=BasicBlockV2,
+                     growth_factor=2)
         # post-processing
         self.postprocess_module = PostProcessingStandard(parameters)
 
@@ -290,6 +312,9 @@ class GlobalNetwork(AbstractMILUnit):
         # feed into postprocessing network
         cam = self.postprocess_module.forward(last_feature_map)
         return last_feature_map, cam
+
+
+
 
 
 class TopTPercentAggregationFunction(AbstractMILUnit):
@@ -403,7 +428,7 @@ class AttentionModule(AbstractMILUnit):
         self.parent_module.mil_attn_U = nn.Linear(512, 128, bias=False)
         self.parent_module.mil_attn_w = nn.Linear(128, 1, bias=False)
         # classifier
-        self.parent_module.classifier_linear = nn.Linear(512, 2, bias=False)
+        self.parent_module.classifier_linear = nn.Linear(512, self.parameters["num_classes"], bias=False)
 
     def forward(self, h_crops):
         """

@@ -56,7 +56,7 @@ class GMIC(nn.Module):
         self.attention_module.add_layers()
 
         # fusion branch
-        self.fusion_dnn = nn.Linear(768, 2)
+        self.fusion_dnn = nn.Linear(parameters["post_processing_dim"]+512, parameters["num_classes"])
 
     def _convert_crop_position(self, crops_x_small, cam_size, x_original):
         """
