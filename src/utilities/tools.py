@@ -195,7 +195,7 @@ def get_max_window(input_image, window_shape, pooling_logic="avg"):
     # transform to linear and get the index of the max val locations
     _, max_linear_idx = torch.max(pool_map.view(N, C, -1), -1)
     # convert back to 2d index
-    max_idx_x = max_linear_idx / W_map
+    max_idx_x = max_linear_idx // W_map
     max_idx_y = max_linear_idx - max_idx_x * W_map
     # put together the 2d index
     upper_left_points = torch.cat([max_idx_x.unsqueeze(-1), max_idx_y.unsqueeze(-1)], dim=-1)
